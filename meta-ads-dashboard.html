@@ -286,6 +286,17 @@ textarea.form-input{resize:vertical;min-height:80px;}
   .page{padding:16px 14px;}
   .topbar{padding:12px 14px;}
 }
+
+/* Creative Library */
+.sku-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;font-family:'Syne',sans-serif;padding:2px 8px;border-radius:6px;background:rgba(79,110,247,0.15);color:var(--accent);border:1px solid rgba(79,110,247,0.25);letter-spacing:.03em;white-space:nowrap;}
+.sku-input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;font-family:'Syne',sans-serif;color:var(--accent);outline:none;width:100px;letter-spacing:.03em;}
+.sku-input:focus{border-color:var(--accent);}
+.lib-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;background:var(--bg3);flex-shrink:0;}
+.lib-thumb-wrap{width:36px;height:36px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.lib-ad-pill{display:inline-block;font-size:9px;padding:1px 6px;border-radius:5px;background:var(--bg4);color:var(--text3);margin:1px;white-space:nowrap;}
+.notes-input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text2);font-family:'DM Sans',sans-serif;outline:none;width:140px;}
+.notes-input:focus{border-color:var(--accent);}
+.lib-action-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
 </style>
 </head>
 <body>
@@ -300,6 +311,7 @@ textarea.form-input{resize:vertical;min-height:80px;}
   <nav class="nav">
     <div class="nav-section">Data</div>
     <div class="nav-item active" onclick="goPage('upload')"><span class="nav-icon">⬆</span>Upload</div>
+    <div class="nav-item" onclick="goPage('library')"><span class="nav-icon">🗃</span>Library</div>
     <div class="nav-item" onclick="goPage('reports')"><span class="nav-icon">📋</span>Reports</div>
     <div class="nav-section">Analysis</div>
     <div class="nav-item" onclick="goPage('dashboard')"><span class="nav-icon">▦</span>Dashboard</div>
@@ -382,6 +394,53 @@ textarea.form-input{resize:vertical;min-height:80px;}
         <div class="spec-card"><div class="spec-title">🖼 Carousel</div><div class="spec-detail">1:1 · 1080×1080<br>2–10 cards · JPG/PNG</div></div>
         <div class="spec-card"><div class="spec-title">📸 Static Feed</div><div class="spec-detail">1:1 or 4:5 · 1080px<br>JPG/PNG ≤30MB</div></div>
         <div class="spec-card"><div class="spec-title">🎬 In-stream</div><div class="spec-detail">16:9 · 1280×720<br>5–15s · MP4 ≤4GB</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATIVE LIBRARY -->
+  <div id="page-library" class="page">
+    <div class="lib-action-bar">
+      <button class="btn btn-primary btn-sm" onclick="autoAssignAllSKUs()">Auto-assign SKUs</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCreativeDB('csv')">Export CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCreativeDB('json')">Export JSON</button>
+      <span id="lib-count" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
+    </div>
+    <div class="panel">
+      <div class="section-hdr">
+        <h2>Creative Registry</h2>
+        <input id="lib-search" class="form-input" style="width:200px;padding:5px 10px;font-size:11px" placeholder="Search filename or SKU…" oninput="renderLibrary()">
+      </div>
+      <div class="table-wrap">
+        <table id="lib-table">
+          <thead><tr>
+            <th style="width:44px"></th>
+            <th>Filename</th>
+            <th>SKU Code</th>
+            <th>Type</th>
+            <th>Used in Ads</th>
+            <th>Notes</th>
+            <th>Uploaded</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="lib-tbody">
+            <tr><td colspan="8"><div class="empty"><div class="empty-icon">🗃</div><h3>No creatives uploaded yet</h3><p>Upload creative files from the Upload page.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:0">
+      <div class="section-hdr"><h2>Folder structure</h2></div>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Organise your local files before uploading. Two dedicated subfolders are provided in the project root.</p>
+      <div class="two-col">
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px 16px">
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">📊 uploads/excel/</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.6">Drop your Meta Ads Manager .xlsx or .csv exports here before uploading to the dashboard.</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px 16px">
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">🎬 uploads/creatives/</div>
+          <div style="font-size:11px;color:var(--text3);line-height:1.6">Drop your ad creative images and videos here. Filenames must match the Ad Name in Meta Ads Manager.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -666,6 +725,7 @@ const COLORS = ['#4f6ef7','#22c993','#f5a623','#a78bfa','#f04f5f','#38bdf8','#fb
 
 const PAGE_META = {
   upload:    ['Upload',        'Load creatives & performance data'],
+  library:   ['Creative Library', 'SKU database & creative registry'],
   reports:   ['Reports',       'Manage saved reports & media'],
   dashboard: ['Dashboard',     'Performance overview'],
   campaigns: ['Campaigns',     'Campaign → Ad Set → Ad hierarchy'],
@@ -714,6 +774,7 @@ const COL = {
 const S = {
   reports: [],        // all saved reports from DB: { id, label, dateStart, dateEnd, rows[], fileName, uploadedAt }
   media: new Map(),   // normName → { url (objectURL), type, originalName }
+  creatives: new Map(), // normName → { normName, sku, notes, autoAssigned, createdAt }
   knowledge: [],      // all kb items from DB
   currency: '₹',
   activeReportId: null,
@@ -739,7 +800,7 @@ const DB = (() => {
 
   function open() {
     return new Promise((res, rej) => {
-      const req = indexedDB.open('MetaAdsDB', 3);
+      const req = indexedDB.open('MetaAdsDB', 4);
       req.onupgradeneeded = e => {
         const d = e.target.result;
         if (!d.objectStoreNames.contains('reports'))
@@ -750,6 +811,8 @@ const DB = (() => {
           d.createObjectStore('knowledge', { keyPath: 'id', autoIncrement: true });
         if (!d.objectStoreNames.contains('settings'))
           d.createObjectStore('settings', { keyPath: 'key' });
+        if (!d.objectStoreNames.contains('creatives'))
+          d.createObjectStore('creatives', { keyPath: 'normName' });
       };
       req.onsuccess = e => { db = e.target.result; res(db); };
       req.onerror = e => rej(e.target.error);
@@ -798,6 +861,11 @@ async function loadFromDB() {
     }
   }));
 
+  // Creatives (SKU database)
+  const creativeItems = await DB.getAll('creatives');
+  S.creatives.clear();
+  creativeItems.forEach(c => S.creatives.set(c.normName, c));
+
   // Knowledge
   S.knowledge = await DB.getAll('knowledge');
 
@@ -806,7 +874,7 @@ async function loadFromDB() {
   settingRows.forEach(s => { S.settings[s.key] = s.value; });
   S.currency = S.settings.currency || '₹';
   document.getElementById('db-status').textContent =
-    `${S.reports.length} report${S.reports.length !== 1 ? 's' : ''} · ${S.media.size} media`;
+    `${S.reports.length} report${S.reports.length !== 1 ? 's' : ''} · ${S.media.size} media · ${S.creatives.size} SKUs`;
 }
 
 async function saveReportToDB(report) {
@@ -953,6 +1021,13 @@ async function handleMedia(files) {
     const url = URL.createObjectURL(blob);
     S.media.set(key, { url, type: isVideo ? 'video' : 'image', originalName: file.name });
     await saveMediaToDB(key, blob, isVideo ? 'video' : 'image', file.name);
+    // Auto-create SKU entry if not exists
+    if (!S.creatives.has(key)) {
+      const sku = generateNextSKU();
+      const entry = { normName: key, sku, notes: '', autoAssigned: true, createdAt: new Date().toISOString() };
+      S.creatives.set(key, entry);
+      await DB.put('creatives', entry);
+    }
     count++;
   }
   // Re-attach to existing report rows
@@ -1088,9 +1163,10 @@ function goPage(name) {
   });
   const m = PAGE_META[name] || [name, ''];
   document.getElementById('page-title').innerHTML = `${m[0]} <span id="page-sub">${m[1]}</span>`;
-  const showActions = name !== 'upload' && name !== 'settings' && name !== 'knowledge';
+  const showActions = name !== 'upload' && name !== 'settings' && name !== 'knowledge' && name !== 'library';
   document.getElementById('topbar-actions').style.display = showActions ? 'flex' : 'none';
   syncReportPills();
+  if (name === 'library')   renderLibrary();
   if (name === 'reports')   renderReports();
   if (name === 'dashboard') renderDashboard();
   if (name === 'campaigns') renderCampaigns();
@@ -1224,7 +1300,7 @@ async function clearAllMedia() {
 
 function updateDbStatus() {
   document.getElementById('db-status').textContent =
-    `${S.reports.length} report${S.reports.length !== 1 ? 's' : ''} · ${S.media.size} media`;
+    `${S.reports.length} report${S.reports.length !== 1 ? 's' : ''} · ${S.media.size} media · ${S.creatives.size} SKUs`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -2316,6 +2392,152 @@ function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════
+// CREATIVE LIBRARY (SKU DATABASE)
+// ═══════════════════════════════════════════════════
+function generateNextSKU() {
+  let maxNum = 0;
+  S.creatives.forEach(c => {
+    const m = c.sku?.match(/^CRE-(\d+)$/);
+    if (m) maxNum = Math.max(maxNum, parseInt(m[1]));
+  });
+  return `CRE-${String(maxNum + 1).padStart(3, '0')}`;
+}
+
+async function saveCreativeEntry(normName, sku, notes) {
+  const existing = S.creatives.get(normName) || {};
+  const entry = { ...existing, normName, sku: sku.trim().toUpperCase(), notes, updatedAt: new Date().toISOString() };
+  if (!entry.createdAt) entry.createdAt = new Date().toISOString();
+  S.creatives.set(normName, entry);
+  await DB.put('creatives', entry);
+}
+
+async function autoAssignAllSKUs() {
+  let assigned = 0;
+  for (const [normName] of S.media) {
+    if (!S.creatives.has(normName) || !S.creatives.get(normName).sku) {
+      const sku = generateNextSKU();
+      await saveCreativeEntry(normName, sku, '');
+      assigned++;
+    }
+  }
+  renderLibrary();
+  updateDbStatus();
+  toast(assigned > 0 ? `✓ ${assigned} SKU${assigned !== 1 ? 's' : ''} auto-assigned` : 'All creatives already have SKUs');
+}
+
+function getAdNamesForCreative(normName) {
+  const names = new Set();
+  S.reports.forEach(r => r.rows.forEach(row => {
+    if (normFile(row.adName) === normName || (S.media.get(normName)?.originalName && normFile(row.adName) === normName))
+      names.add(row.adName);
+  }));
+  // fuzzy match
+  if (!names.size) {
+    S.reports.forEach(r => r.rows.forEach(row => {
+      const m = findMedia(normFile(row.adName));
+      if (m && normFile(m.originalName || '') === normName) names.add(row.adName);
+    }));
+  }
+  return [...names];
+}
+
+function renderLibrary() {
+  const search = (document.getElementById('lib-search')?.value || '').toLowerCase();
+  const tbody = document.getElementById('lib-tbody');
+  const countEl = document.getElementById('lib-count');
+
+  if (!S.media.size) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🗃</div><h3>No creatives uploaded yet</h3><p>Upload creative files from the Upload page.</p></div></td></tr>`;
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  const entries = [];
+  S.media.forEach((media, normName) => {
+    const creative = S.creatives.get(normName) || {};
+    if (search && !normName.includes(search) && !(creative.sku || '').toLowerCase().includes(search) && !media.originalName.toLowerCase().includes(search)) return;
+    entries.push({ normName, media, creative });
+  });
+
+  if (countEl) countEl.textContent = `${entries.length} creative${entries.length !== 1 ? 's' : ''}`;
+
+  if (!entries.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔍</div><h3>No match</h3></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = entries.map(({ normName, media, creative }) => {
+    const thumb = media.type === 'video'
+      ? `<video src="${media.url}" class="lib-thumb" muted></video>`
+      : `<img src="${media.url}" class="lib-thumb" alt="">`;
+    const sku = creative.sku || '';
+    const notes = creative.notes || '';
+    const adNames = getAdNamesForCreative(normName);
+    const adPills = adNames.length
+      ? adNames.slice(0, 4).map(n => `<span class="lib-ad-pill" title="${n}">${n.length > 18 ? n.slice(0, 18) + '…' : n}</span>`).join('') + (adNames.length > 4 ? `<span class="lib-ad-pill">+${adNames.length - 4} more</span>` : '')
+      : `<span style="font-size:10px;color:var(--text3)">—</span>`;
+    const uploadedAt = (S.media.get(normName)?.uploadedAt) ? fmtDate(S.media.get(normName).uploadedAt) : '—';
+
+    return `<tr>
+      <td>${thumb}</td>
+      <td style="font-size:12px;color:var(--text);max-width:160px;word-break:break-all">${media.originalName}</td>
+      <td>
+        <input class="sku-input" id="sku-${normName}" value="${sku}" placeholder="CRE-001"
+          onblur="commitSKU('${normName}')" onkeydown="if(event.key==='Enter')this.blur()">
+      </td>
+      <td><span class="spill ${media.type === 'video' ? 'sp-active' : 'sp-learning'}" style="font-size:9px">${media.type}</span></td>
+      <td style="max-width:200px">${adPills}</td>
+      <td>
+        <input class="notes-input" id="notes-${normName}" value="${notes.replace(/"/g,'&quot;')}" placeholder="Add notes…"
+          onblur="commitNotes('${normName}')" onkeydown="if(event.key==='Enter')this.blur()">
+      </td>
+      <td style="font-size:10px;color:var(--text3);white-space:nowrap">${fmtDate(creative.createdAt || '')}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteMedia('${normName}');renderLibrary()">Del</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function commitSKU(normName) {
+  const input = document.getElementById(`sku-${normName}`);
+  if (!input) return;
+  const sku = input.value.trim().toUpperCase();
+  const notes = document.getElementById(`notes-${normName}`)?.value || (S.creatives.get(normName)?.notes || '');
+  await saveCreativeEntry(normName, sku, notes);
+  input.value = sku;
+  updateDbStatus();
+}
+
+async function commitNotes(normName) {
+  const input = document.getElementById(`notes-${normName}`);
+  if (!input) return;
+  const notes = input.value;
+  const sku = document.getElementById(`sku-${normName}`)?.value || (S.creatives.get(normName)?.sku || '');
+  await saveCreativeEntry(normName, sku, notes);
+}
+
+function exportCreativeDB(format) {
+  if (!S.media.size) { toast('No creatives to export.'); return; }
+  const rows = [];
+  S.media.forEach((media, normName) => {
+    const c = S.creatives.get(normName) || {};
+    const adNames = getAdNamesForCreative(normName).join(' | ');
+    rows.push({ sku: c.sku || '', filename: media.originalName, type: media.type, adNames, notes: c.notes || '', createdAt: c.createdAt || '' });
+  });
+
+  if (format === 'json') {
+    const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'creatives_db.json'; a.click();
+    toast('✓ Exported as JSON');
+  } else {
+    const header = ['SKU', 'Filename', 'Type', 'Ad Names', 'Notes', 'Created At'];
+    const csv = [header, ...rows.map(r => [r.sku, r.filename, r.type, r.adNames, r.notes, r.createdAt].map(v => `"${String(v).replace(/"/g,'""')}"`))].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'creatives_db.csv'; a.click();
+    toast('✓ Exported as CSV');
+  }
 }
 
 // ═══════════════════════════════════════════════════
