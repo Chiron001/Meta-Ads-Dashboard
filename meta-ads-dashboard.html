@@ -299,12 +299,21 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .lib-action-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
 
 /* Date filter bar */
-.date-filter-bar{display:flex;align-items:center;gap:10px;padding:9px 28px;border-bottom:1px solid var(--border);background:var(--bg2);flex-wrap:wrap;}
-.date-input{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;width:128px;color-scheme:dark;}
+.date-filter-bar{display:flex;align-items:center;gap:0;padding:0;border-bottom:1px solid var(--border);background:var(--bg2);flex-wrap:wrap;}
+.dfb-section{display:flex;align-items:center;gap:8px;padding:9px 20px;flex-wrap:wrap;}
+.dfb-divider{width:1px;height:36px;background:var(--border);flex-shrink:0;}
+.dfb-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);white-space:nowrap;}
+.date-input{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;width:122px;color-scheme:dark;}
 .date-input:focus{border-color:var(--accent);}
 .date-preset{font-size:10px;padding:3px 9px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .date-preset:hover,.date-preset.dp-active{background:rgba(79,110,247,0.15);border-color:var(--accent);color:var(--accent);}
-@media(max-width:900px){.date-filter-bar{padding:8px 14px;}}
+.cmp-select{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--text2);font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;}
+.cmp-select:focus{border-color:var(--accent);}
+.dfb-info{font-size:10px;color:var(--text3);padding:0 16px;flex:1;min-width:0;}
+.comp-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(34,201,147,0.12);color:var(--green);border:1px solid rgba(34,201,147,0.2);white-space:nowrap;}
+/* KPI comparison */
+.kpi-comp{font-size:9px;color:var(--text3);margin-top:1px;line-height:1.4;}
+@media(max-width:900px){.dfb-section{padding:7px 12px;}.dfb-divider{display:none;}}
 </style>
 </head>
 <body>
@@ -346,17 +355,37 @@ textarea.form-input{resize:vertical;min-height:80px;}
 
   <!-- DATE FILTER BAR -->
   <div id="date-filter-bar" class="date-filter-bar" style="display:none">
-    <span style="font-size:10px;font-weight:500;color:var(--text2);white-space:nowrap">Date filter</span>
-    <input type="date" id="date-from" class="date-input" onchange="applyDateFilter()" title="From date">
-    <span style="font-size:11px;color:var(--text3)">→</span>
-    <input type="date" id="date-to" class="date-input" onchange="applyDateFilter()" title="To date">
-    <div style="display:flex;gap:4px">
-      <button class="date-preset" id="dp-7"  onclick="setDatePreset(7)">7d</button>
-      <button class="date-preset" id="dp-14" onclick="setDatePreset(14)">14d</button>
-      <button class="date-preset" id="dp-30" onclick="setDatePreset(30)">30d</button>
-      <button class="date-preset" id="dp-all" onclick="clearDateFilter()">All</button>
+    <div class="dfb-section">
+      <span class="dfb-label">Period</span>
+      <input type="date" id="date-from" class="date-input" onchange="applyDateFilter()">
+      <span style="font-size:11px;color:var(--text3)">→</span>
+      <input type="date" id="date-to" class="date-input" onchange="applyDateFilter()">
+      <div style="display:flex;gap:4px">
+        <button class="date-preset" id="dp-7"  onclick="setDatePreset(7)">7d</button>
+        <button class="date-preset" id="dp-14" onclick="setDatePreset(14)">14d</button>
+        <button class="date-preset" id="dp-30" onclick="setDatePreset(30)">30d</button>
+        <button class="date-preset dp-active" id="dp-all" onclick="clearDateFilter()">All</button>
+      </div>
     </div>
-    <span id="date-filter-info" style="font-size:10px;color:var(--text3);flex:1"></span>
+    <div class="dfb-divider"></div>
+    <div class="dfb-section">
+      <span class="dfb-label">Compare vs</span>
+      <select id="compare-mode" class="cmp-select" onchange="applyCompareMode()">
+        <option value="none">No comparison</option>
+        <option value="previous">Previous period</option>
+        <option value="year">Same period last year</option>
+        <option value="custom">Custom period</option>
+      </select>
+      <div id="comp-custom-wrap" style="display:none;display:flex;align-items:center;gap:6px">
+        <input type="date" id="comp-from" class="date-input" onchange="applyDateFilter()">
+        <span style="font-size:11px;color:var(--text3)">→</span>
+        <input type="date" id="comp-to" class="date-input" onchange="applyDateFilter()">
+      </div>
+    </div>
+    <div class="dfb-info">
+      <div id="date-filter-info"></div>
+      <div id="date-comp-info" style="margin-top:2px"></div>
+    </div>
   </div>
 
   <!-- UPLOAD -->
@@ -489,21 +518,21 @@ textarea.form-input{resize:vertical;min-height:80px;}
     <div class="kpi-row" id="kpi-row"></div>
     <div class="two-col" style="margin-bottom:20px">
       <div class="panel">
-        <div class="section-hdr"><h2>Performance trend</h2>
-          <select id="trend-metric" onchange="renderTrendChart()">
+        <div class="section-hdr"><h2 id="trend-chart-title">Performance trend</h2>
+          <select id="trend-metric" onchange="renderDashboard()">
             <option value="roas">ROAS</option><option value="ctr">CTR%</option>
             <option value="cpm">CPM</option><option value="cpa">CPA</option>
-            <option value="hookRate">Hook Rate%</option>
+            <option value="spend">Spend</option><option value="hookRate">Hook Rate%</option>
           </select>
         </div>
-        <div class="chart-wrap" style="height:200px"><canvas id="trendChart"></canvas></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="trendChart"></canvas></div>
       </div>
       <div class="panel">
-        <div class="section-hdr"><h2>ROAS by creative</h2></div>
-        <div class="chart-wrap" style="height:200px"><canvas id="roasBar"></canvas></div>
+        <div class="section-hdr"><h2>ROAS by creative</h2><span id="roas-bar-mode" style="font-size:10px;color:var(--text3)"></span></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="roasBar"></canvas></div>
       </div>
     </div>
-    <div class="three-col">
+    <div class="three-col" style="margin-bottom:20px">
       <div class="panel">
         <div class="section-hdr"><h2>Hook vs Hold Rate</h2></div>
         <div class="chart-wrap" style="height:160px"><canvas id="hookHoldBar"></canvas></div>
@@ -516,6 +545,10 @@ textarea.form-input{resize:vertical;min-height:80px;}
         <div class="section-hdr"><h2>Spend vs ROAS</h2></div>
         <div class="chart-wrap" style="height:160px"><canvas id="spendScatter"></canvas></div>
       </div>
+    </div>
+    <div id="comp-table-panel" class="panel" style="display:none">
+      <div class="section-hdr"><h2 id="comp-table-title">Period comparison</h2></div>
+      <div class="table-wrap" id="comp-table-body"></div>
     </div>
   </div>
 
@@ -809,7 +842,8 @@ const S = {
   campTab: 'campaigns',
   pending: { rows: [], mediaFiles: [], excelFile: null, dateStart: '', dateEnd: '' },
   settings: {},
-  dateFilter: { from: '', to: '' },
+  dateFilter:  { from: '', to: '' },
+  dateCompare: { mode: 'none', from: '', to: '' },
   _lastRenderedRows: [],
 };
 
@@ -1223,9 +1257,14 @@ function syncReportPills() {
 
 function setActiveReport(id, el) {
   S.activeReportId = id;
-  S.dateFilter = { from: '', to: '' };
-  const f = document.getElementById('date-from'); if (f) f.value = '';
-  const t = document.getElementById('date-to');   if (t) t.value = '';
+  S.dateFilter  = { from: '', to: '' };
+  S.dateCompare = { mode: 'none', from: '', to: '' };
+  const f = document.getElementById('date-from');  if (f) f.value = '';
+  const t = document.getElementById('date-to');    if (t) t.value = '';
+  const cm = document.getElementById('compare-mode'); if (cm) cm.value = 'none';
+  const cw = document.getElementById('comp-custom-wrap'); if (cw) cw.style.display = 'none';
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('dp-active'));
+  document.getElementById('dp-all')?.classList.add('dp-active');
   document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
   el?.classList.add('active');
   const active = document.querySelector('.page.active');
@@ -1359,24 +1398,46 @@ function renderDashboard() {
     document.getElementById('kpi-row').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📊</div><h3>No data loaded</h3><p>Select a report from the top bar.</p></div>`;
     return;
   }
-  renderKPIs(data);
-  renderTrendChart();
-  renderRoasBar(data);
+  const comp = resolveComparisonPeriod();
+  renderKPIs(data, comp);
+  renderPerfTrendChart(comp);
+  renderRoasBar(data, comp);
   renderHookHoldBar(data);
   renderFormatBar(data);
   renderSpendScatter(data);
+  renderCompTable(data, comp);
 }
 
-function renderKPIs(data) {
-  // Find a previous report for delta comparison (next oldest)
-  const idx = S.reports.findIndex(r => r.id === S.activeReportId);
-  const prev = idx >= 0 && idx < S.reports.length - 1 ? S.reports[idx + 1].rows : null;
+function renderKPIs(data, comp) {
+  const compRows = comp?.rows || null;
 
-  function delta(curr, prevVal, lowerBetter = false) {
-    if (!prevVal || prevVal === 0) return { t: '—', c: 'delta-neu' };
-    const p = ((curr - prevVal) / Math.abs(prevVal)) * 100;
+  // Fallback to previous report comparison if no period comparison active
+  let fallbackPrev = null, fallbackLbl = '';
+  if (!compRows) {
+    const idx = S.reports.findIndex(r => r.id === S.activeReportId);
+    if (idx >= 0 && idx < S.reports.length - 1) {
+      fallbackPrev = S.reports[idx + 1].rows;
+      fallbackLbl  = S.reports[idx + 1].label;
+    }
+  }
+  const ref     = compRows || fallbackPrev;
+  const refLbl  = comp ? comp.label : fallbackLbl;
+
+  function delta(curr, refVal, lowerBetter = false) {
+    if (!ref || !refVal) return { t: '—', c: 'delta-neu', compVal: null };
+    const p = ((curr - refVal) / Math.abs(refVal)) * 100;
     const good = lowerBetter ? p < 0 : p > 0;
-    return { t: (p > 0 ? '+' : '') + p.toFixed(1) + '%', c: good ? 'delta-up' : 'delta-down' };
+    return { t: (p > 0 ? '+' : '') + p.toFixed(1) + '%', c: good ? 'delta-up' : 'delta-down', compVal: refVal };
+  }
+
+  function fmt(val, type) {
+    if (val === null || val === undefined) return '—';
+    if (type === 'roas')    return val.toFixed(2) + 'x';
+    if (type === 'ctr')     return val.toFixed(2) + '%';
+    if (type === 'hook')    return val.toFixed(1) + '%';
+    if (type === 'num')     return val.toLocaleString();
+    if (type === 'spend')   return S.currency + fmtNum(val);
+    return String(val);
   }
 
   const totImpr  = sum(data, 'impressions');
@@ -1387,65 +1448,206 @@ function renderKPIs(data) {
   const withHook = data.filter(r => r.hookRate !== null);
   const avgHook  = withHook.length ? avg(withHook, 'hookRate') : null;
 
+  const d_roas  = delta(avgROAS,  ref ? wavg(ref,'roas','spend')   : 0);
+  const d_ctr   = delta(avgCTR,   ref ? wavg(ref,'ctr','impressions') : 0);
+  const d_impr  = delta(totImpr,  ref ? sum(ref,'impressions') : 0);
+  const d_conv  = delta(totConv,  ref ? sum(ref,'purchases')   : 0);
+  const d_spend = delta(totSpend, ref ? sum(ref,'spend')       : 0, true);
+
+  const vsLbl = refLbl ? `<span style="font-size:9px;opacity:.65"> vs ${refLbl}</span>` : '';
+
   const cards = [
-    { lbl: 'Total Impressions', val: fmtNum(totImpr), d: delta(totImpr, prev ? sum(prev,'impressions') : 0), pct: 60 },
-    { lbl: 'Avg ROAS',          val: avgROAS.toFixed(2) + 'x', d: delta(avgROAS, prev ? wavg(prev,'roas','spend') : 0), pct: Math.min(100, avgROAS * 14) },
-    { lbl: 'Avg CTR',           val: avgCTR.toFixed(2) + '%', d: delta(avgCTR, prev ? wavg(prev,'ctr','impressions') : 0), pct: Math.min(100, avgCTR * 15) },
-    { lbl: 'Total Purchases',   val: totConv.toLocaleString(), d: delta(totConv, prev ? sum(prev,'purchases') : 0), pct: 50 },
+    { lbl:'Total Spend',     val:S.currency+fmtNum(totSpend), d:d_spend, compFmt:fmt(d_spend.compVal,'spend'),   pct:55 },
+    { lbl:'Avg ROAS',        val:avgROAS.toFixed(2)+'x',      d:d_roas,  compFmt:fmt(d_roas.compVal,'roas'),     pct:Math.min(100,avgROAS*14) },
+    { lbl:'Avg CTR',         val:avgCTR.toFixed(2)+'%',       d:d_ctr,   compFmt:fmt(d_ctr.compVal,'ctr'),       pct:Math.min(100,avgCTR*15) },
+    { lbl:'Total Purchases', val:totConv.toLocaleString(),     d:d_conv,  compFmt:fmt(d_conv.compVal,'num'),      pct:50 },
     avgHook !== null
-      ? { lbl: 'Avg Hook Rate', val: avgHook.toFixed(1) + '%', d: { t: 'video metric', c: 'delta-neu' }, pct: Math.min(100, avgHook * 2.5) }
-      : { lbl: 'Total Spend', val: S.currency + fmtNum(totSpend), d: delta(totSpend, prev ? sum(prev,'spend') : 0, true), pct: 45 },
+      ? { lbl:'Avg Hook Rate', val:avgHook.toFixed(1)+'%',    d:{t:'video',c:'delta-neu'}, compFmt:'', pct:Math.min(100,avgHook*2.5) }
+      : { lbl:'Total Impressions', val:fmtNum(totImpr),       d:d_impr,  compFmt:fmt(d_impr.compVal,'num'),      pct:60 },
   ];
 
-  const prevLbl = prev && idx < S.reports.length - 1 ? ' vs ' + S.reports[idx + 1].label : '';
   document.getElementById('kpi-row').innerHTML = cards.map(c => `
     <div class="kpi">
       <div class="kpi-label">${c.lbl}</div>
       <div class="kpi-value">${c.val}</div>
-      <div class="kpi-delta ${c.d.c}">${c.d.t}${prevLbl}</div>
+      <div class="kpi-delta ${c.d.c}">${c.d.t}${vsLbl}</div>
+      ${c.compFmt && c.d.compVal ? `<div class="kpi-comp">comp: ${c.compFmt}</div>` : '<div class="kpi-comp"></div>'}
       <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${c.pct}%"></div></div>
     </div>`).join('');
 }
 
-function renderTrendChart() {
-  const metric = document.getElementById('trend-metric')?.value || 'roas';
+function renderTrendChart() { renderPerfTrendChart(resolveComparisonPeriod()); }
+
+function renderPerfTrendChart(comp) {
+  const metric  = document.getElementById('trend-metric')?.value || 'roas';
+  const allRows = activeRows();
+  const titleEl = document.getElementById('trend-chart-title');
+
+  // ── Daily timeline mode ─────────────────────────────
+  if (hasDateCol(allRows)) {
+    if (titleEl) titleEl.textContent = 'Daily trend';
+    const { from: mf, to: mt } = S.dateFilter;
+    const { min: dataMin, max: dataMax } = getDataDateRange(allRows);
+    const fromStr = mf || dataMin;
+    const toStr   = mt || dataMax;
+    if (!fromStr) return;
+
+    const mainDates = datesBetween(fromStr, toStr);
+    // Group all rows by date (not filtered — we need ALL dates for grouping)
+    const byDate = {};
+    filterRowsByRange(allRows, fromStr, toStr).forEach(r => {
+      if (!r.rowDate) return;
+      (byDate[r.rowDate] = byDate[r.rowDate] || []).push(r);
+    });
+
+    const mainValues = mainDates.map(d => dayMetric(byDate[d] || [], metric));
+    const labels     = mainDates.map(d => {
+      const dd = new Date(d);
+      return dd.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+    });
+
+    const datasets = [{
+      label: mf ? `${fmtDate(mf)} – ${fmtDate(mt)}` : 'All data',
+      data: mainValues,
+      borderColor: '#4f6ef7', backgroundColor: 'rgba(79,110,247,0.07)',
+      borderWidth: 2, tension: 0.3, pointRadius: mainDates.length > 60 ? 0 : 2,
+      fill: true, spanGaps: true,
+    }];
+
+    if (comp) {
+      const compDates = datesBetween(comp.from, comp.to);
+      const compByDate = {};
+      filterRowsByRange(allRows, comp.from, comp.to).forEach(r => {
+        if (!r.rowDate) return;
+        (compByDate[r.rowDate] = compByDate[r.rowDate] || []).push(r);
+      });
+      // Align comparison day-for-day with main period by index
+      const compValues = mainDates.map((_, i) => dayMetric(compByDate[compDates[i]] || [], metric));
+      datasets.push({
+        label: `Comparison (${comp.label})`,
+        data: compValues,
+        borderColor: '#22c993', backgroundColor: 'transparent',
+        borderWidth: 2, tension: 0.3, pointRadius: mainDates.length > 60 ? 0 : 2,
+        borderDash: [5, 3], spanGaps: true,
+      });
+    }
+
+    mkChart('trendChart', {
+      type: 'line', data: { labels, datasets },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins: { legend:{ display:datasets.length>1, labels:{ color:'#8b90a8',font:{size:10},boxWidth:9,padding:7 } },
+          tooltip:{ mode:'index', intersect:false, callbacks:{ title: ctx => mainDates[ctx[0]?.dataIndex] || '' } } },
+        scales: { x:xA({ ticks:{ maxTicksLimit:12, maxRotation:30 } }), y:yA({ beginAtZero:false }) } }
+    });
+    return;
+  }
+
+  // ── Multi-report mode (no daily data) ───────────────
+  if (titleEl) titleEl.textContent = 'Performance trend';
   const loaded = S.reports;
   if (!loaded.length) return;
-  const labels = [...loaded].reverse().map(r => r.label.length > 14 ? r.label.slice(0, 14) + '…' : r.label);
-  // Top 5 ads from active report
-  const activeData = filteredRows();
-  const top5 = [...activeData].sort((a, b) => b.roas - a.roas).slice(0, 5);
-
-  const datasets = top5.map((c, i) => ({
-    label: c.adName.length > 16 ? c.adName.slice(0, 16) + '…' : c.adName,
-    data: [...loaded].reverse().map(r => {
-      const row = r.rows.find(x => x.adName === c.adName);
-      return row ? (row[metric] ?? null) : null;
-    }),
-    borderColor: COLORS[i], backgroundColor: 'transparent',
-    borderWidth: 2, tension: 0.3, pointRadius: 4, pointBackgroundColor: COLORS[i], spanGaps: true,
+  const labels  = [...loaded].reverse().map(r => r.label.length>14 ? r.label.slice(0,14)+'…' : r.label);
+  const top5    = [...filteredRows()].sort((a,b)=>b.roas-a.roas).slice(0,5);
+  const datasets = top5.map((c,i) => ({
+    label: c.adName.length>16?c.adName.slice(0,16)+'…':c.adName,
+    data: [...loaded].reverse().map(r => { const row=r.rows.find(x=>x.adName===c.adName); return row?(row[metric]??null):null; }),
+    borderColor:COLORS[i], backgroundColor:'transparent',
+    borderWidth:2, tension:0.3, pointRadius:4, pointBackgroundColor:COLORS[i], spanGaps:true,
   }));
-
   mkChart('trendChart', {
-    type: 'line', data: { labels, datasets },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: datasets.length > 1, labels: { color: '#8b90a8', font: { size: 10 }, boxWidth: 9, padding: 7 } } },
-      scales: { x: xA(), y: yA() } }
+    type:'line', data:{ labels, datasets },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:datasets.length>1, labels:{ color:'#8b90a8',font:{size:10},boxWidth:9,padding:7 } } },
+      scales:{ x:xA(), y:yA() } }
   });
 }
 
-function renderRoasBar(data) {
-  const sorted = [...data].sort((a, b) => b.roas - a.roas).slice(0, 14);
+function renderRoasBar(data, comp) {
+  const sorted = [...data].sort((a, b) => b.roas - a.roas).slice(0, 12);
+  const modeEl = document.getElementById('roas-bar-mode');
+  const labels = sorted.map(c => c.adName.length > 13 ? c.adName.slice(0, 13) + '…' : c.adName);
+
+  const datasets = [{
+    label: 'Main period',
+    data: sorted.map(c => c.roas),
+    backgroundColor: sorted.map(c => c.tier==='top'?'#4f6ef7':c.tier==='mid'?'#f5a623':'#f04f5f'),
+    borderRadius: 4, borderSkipped: false,
+  }];
+
+  if (comp?.rows?.length) {
+    const compMap = new Map(comp.rows.map(r => [r.adName, r.roas]));
+    datasets.push({
+      label: `Comp (${comp.label})`,
+      data: sorted.map(c => compMap.get(c.adName) ?? null),
+      backgroundColor: 'rgba(34,201,147,0.45)', borderRadius: 4, borderSkipped: false,
+    });
+    if (modeEl) modeEl.textContent = `vs ${comp.label}`;
+  } else {
+    if (modeEl) modeEl.textContent = '';
+  }
+
   mkChart('roasBar', {
-    type: 'bar',
-    data: { labels: sorted.map(c => c.adName.length > 14 ? c.adName.slice(0, 14) + '…' : c.adName),
-      datasets: [{ data: sorted.map(c => c.roas),
-        backgroundColor: sorted.map(c => c.tier === 'top' ? '#4f6ef7' : c.tier === 'mid' ? '#f5a623' : '#f04f5f'),
-        borderRadius: 4, borderSkipped: false }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: xA({ ticks: { maxRotation: 30, autoSkip: false } }), y: yA() } }
+    type: 'bar', data: { labels, datasets },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:datasets.length>1, labels:{ color:'#8b90a8',font:{size:10},boxWidth:9,padding:7 } } },
+      scales:{ x:xA({ ticks:{ maxRotation:35 } }), y:yA() } }
   });
+}
+
+function renderCompTable(data, comp) {
+  const panel = document.getElementById('comp-table-panel');
+  const body  = document.getElementById('comp-table-body');
+  const title = document.getElementById('comp-table-title');
+  if (!panel || !body) return;
+  if (!comp?.rows?.length) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+  const modeLabel = { previous:'Previous period', year:'Same period last year', custom:'Custom period' }[comp.mode] || 'Comparison';
+  if (title) title.textContent = `Period comparison — ${modeLabel} (${comp.label})`;
+
+  const compMap = new Map(comp.rows.map(r => [r.adName, r]));
+  const sorted  = [...data].sort((a, b) => b.roas - a.roas);
+
+  function pct(main, ref, lowerBetter = false) {
+    if (!ref || ref === 0) return '<span style="color:var(--text3)">—</span>';
+    const p = ((main - ref) / Math.abs(ref)) * 100;
+    const good = lowerBetter ? p < 0 : p > 0;
+    const cls  = good ? 'var(--green)' : 'var(--red)';
+    return `<span style="color:${cls};font-size:10px">${p>0?'+':''}${p.toFixed(1)}%</span>`;
+  }
+
+  body.innerHTML = `<table>
+    <thead><tr>
+      <th>Creative</th>
+      <th style="text-align:right">ROAS</th><th style="text-align:right">vs comp</th>
+      <th style="text-align:right">Spend</th><th style="text-align:right">vs comp</th>
+      <th style="text-align:right">CTR%</th><th style="text-align:right">vs comp</th>
+      <th style="text-align:right">Purch.</th><th style="text-align:right">vs comp</th>
+      <th style="text-align:right">CPA</th><th style="text-align:right">vs comp</th>
+    </tr></thead>
+    <tbody>${sorted.map(c => {
+      const cp = compMap.get(c.adName);
+      const noData = '<td colspan="2" style="text-align:center;font-size:10px;color:var(--text3)">no comp data</td>';
+      return `<tr>
+        <td><div class="td-name" style="min-width:0">
+          ${c.url?(c.mediaType==='video'?`<video src="${c.url}" class="td-thumb" muted></video>`:`<img src="${c.url}" class="td-thumb" alt="">`):''}
+          <span title="${c.adName}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${c.adName}</span>
+        </div></td>
+        ${cp ? `
+        <td style="text-align:right;font-weight:600;color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'}">${c.roas}x</td>
+        <td style="text-align:right">${pct(c.roas,cp.roas)}</td>
+        <td style="text-align:right">${S.currency}${fmtNum(c.spend)}</td>
+        <td style="text-align:right">${pct(c.spend,cp.spend,true)}</td>
+        <td style="text-align:right">${c.ctr.toFixed(2)}%</td>
+        <td style="text-align:right">${pct(c.ctr,cp.ctr)}</td>
+        <td style="text-align:right">${c.purchases||'—'}</td>
+        <td style="text-align:right">${pct(c.purchases,cp.purchases)}</td>
+        <td style="text-align:right">${c.cpa?S.currency+c.cpa.toFixed(0):'—'}</td>
+        <td style="text-align:right">${c.cpa&&cp.cpa?pct(c.cpa,cp.cpa,true):'—'}</td>
+        ` : `<td style="font-weight:600;color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'};text-align:right">${c.roas}x</td>${noData.replace('colspan="2"','colspan="9"')}`}
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
 }
 
 function renderHookHoldBar(data) {
@@ -2431,164 +2633,216 @@ function toast(msg) {
 }
 
 // ═══════════════════════════════════════════════════
-// DATE FILTER
+// DATE FILTER & PERIOD COMPARISON ENGINE
 // ═══════════════════════════════════════════════════
-function filteredRows(rows) {
-  const data = rows !== undefined ? (rows || []) : activeRows();
-  const { from, to } = S.dateFilter;
-  if (!from && !to) return data;
 
-  const hasDateCol = data.some(r => r.rowDate);
-  if (!hasDateCol) return data;
+// ── Helpers ──────────────────────────────────────────
+function getDataDateRange(rows) {
+  const dates = rows.map(r => r.rowDate).filter(Boolean).sort();
+  return { min: dates[0] || '', max: dates[dates.length - 1] || '', all: dates };
+}
 
-  const fromDate = from ? new Date(from) : null;
-  const toDate   = to   ? new Date(to)   : null;
+function hasDateCol(rows) { return rows.some(r => r.rowDate); }
 
-  const filtered = data.filter(r => {
+function isoStr(d) { return d instanceof Date ? d.toISOString().slice(0, 10) : d; }
+
+function datesBetween(from, to) {
+  const out = [], cur = new Date(from), end = new Date(to);
+  while (cur <= end) { out.push(isoStr(cur)); cur.setDate(cur.getDate() + 1); }
+  return out;
+}
+
+// ── Core row filtering ───────────────────────────────
+function filterRowsByRange(rows, from, to) {
+  if (!from && !to) return rows;
+  const f = from ? new Date(from) : null;
+  const t = to   ? new Date(to)   : null;
+  return rows.filter(r => {
     if (!r.rowDate) return true;
     const d = new Date(r.rowDate);
-    if (fromDate && d < fromDate) return false;
-    if (toDate   && d > toDate)   return false;
+    if (f && d < f) return false;
+    if (t && d > t) return false;
     return true;
   });
-  return aggregateByAd(filtered);
 }
 
 function aggregateByAd(rows) {
   if (!rows.length) return [];
   const byKey = new Map();
-
   rows.forEach(row => {
     const key = `${row.adName}||${row.campaignName}||${row.adsetName}`;
-    if (!byKey.has(key)) {
-      byKey.set(key, {
-        ...row,
-        impressions: 0, reach: 0, spend: 0, linkClicks: 0,
-        video3s: 0, thruplay: 0, purchases: 0, addsToCart: 0, revenue: 0,
-        _rwSum: 0, _rw: 0,
-      });
-    }
+    if (!byKey.has(key)) byKey.set(key, { ...row, impressions:0,reach:0,spend:0,linkClicks:0,video3s:0,thruplay:0,purchases:0,addsToCart:0,revenue:0,_rws:0,_rw:0 });
     const a = byKey.get(key);
-    a.impressions += row.impressions || 0;
-    a.reach       += row.reach       || 0;
-    a.spend       += row.spend       || 0;
-    a.linkClicks  += row.linkClicks  || 0;
-    a.video3s     += row.video3s     || 0;
-    a.thruplay    += row.thruplay    || 0;
-    a.purchases   += row.purchases   || 0;
-    a.addsToCart  += row.addsToCart  || 0;
-    a.revenue     += row.revenue     || 0;
-    if (row.roas && row.spend) { a._rwSum += row.roas * row.spend; a._rw += row.spend; }
+    a.impressions += row.impressions||0; a.reach      += row.reach      ||0;
+    a.spend       += row.spend      ||0; a.linkClicks += row.linkClicks ||0;
+    a.video3s     += row.video3s    ||0; a.thruplay   += row.thruplay   ||0;
+    a.purchases   += row.purchases  ||0; a.addsToCart += row.addsToCart ||0;
+    a.revenue     += row.revenue    ||0;
+    if (row.roas && row.spend) { a._rws += row.roas * row.spend; a._rw += row.spend; }
   });
-
   return [...byKey.values()].map(a => {
-    a.ctr      = a.impressions > 0 ? +((a.linkClicks / a.impressions) * 100).toFixed(2) : 0;
-    a.cpm      = a.impressions > 0 ? +((a.spend / a.impressions) * 1000).toFixed(2)     : 0;
-    a.cpc      = a.linkClicks  > 0 ? +(a.spend / a.linkClicks).toFixed(2)               : 0;
-    a.hookRate = a.impressions > 0 && a.video3s > 0  ? +((a.video3s  / a.impressions) * 100).toFixed(1) : null;
-    a.holdRate = a.video3s     > 0 && a.thruplay > 0 ? +((a.thruplay / a.video3s)     * 100).toFixed(1) : null;
-    a.cpa      = a.purchases > 0 && a.spend > 0 ? +(a.spend / a.purchases).toFixed(2) : 0;
-    a.roas     = a.revenue > 0 && a.spend > 0
-      ? +(a.revenue / a.spend).toFixed(2)
-      : (a._rw > 0 ? +(a._rwSum / a._rw).toFixed(2) : 0);
-    a.frequency = a.reach > 0 ? +(a.impressions / a.reach).toFixed(2) : 0;
-    a.tier      = a.roas >= 4 ? 'top' : a.roas >= 2 ? 'mid' : 'low';
-    delete a._rwSum; delete a._rw;
+    a.ctr      = a.impressions>0 ? +((a.linkClicks/a.impressions)*100).toFixed(2) : 0;
+    a.cpm      = a.impressions>0 ? +((a.spend/a.impressions)*1000).toFixed(2)     : 0;
+    a.cpc      = a.linkClicks >0 ? +(a.spend/a.linkClicks).toFixed(2)             : 0;
+    a.hookRate = a.impressions>0&&a.video3s >0 ? +((a.video3s /a.impressions)*100).toFixed(1) : null;
+    a.holdRate = a.video3s   >0&&a.thruplay>0 ? +((a.thruplay/a.video3s   )*100).toFixed(1) : null;
+    a.cpa      = a.purchases>0&&a.spend>0 ? +(a.spend/a.purchases).toFixed(2) : 0;
+    a.roas     = a.revenue>0&&a.spend>0 ? +(a.revenue/a.spend).toFixed(2) : (a._rw>0 ? +(a._rws/a._rw).toFixed(2) : 0);
+    a.frequency= a.reach>0 ? +(a.impressions/a.reach).toFixed(2) : 0;
+    a.tier     = a.roas>=4?'top':a.roas>=2?'mid':'low';
+    delete a._rws; delete a._rw;
     return a;
   });
 }
 
+// Main period rows (filter → aggregate)
+function filteredRows(rows) {
+  const data = rows !== undefined ? (rows||[]) : activeRows();
+  const { from, to } = S.dateFilter;
+  if (!hasDateCol(data)) return data;  // no Day column — return as-is
+  const filtered = filterRowsByRange(data, from, to);
+  return aggregateByAd(filtered);
+}
+
+// Daily metric value for a set of rows on one day
+function dayMetric(dayRows, metric) {
+  if (!dayRows.length) return null;
+  if (metric==='roas')     return +wavg(dayRows,'roas','spend').toFixed(2);
+  if (metric==='ctr')      return +wavg(dayRows,'ctr','impressions').toFixed(2);
+  if (metric==='cpm')      return +wavg(dayRows,'cpm','impressions').toFixed(0);
+  if (metric==='cpa')      { const v=dayRows.filter(r=>r.cpa>0); return v.length?+avg(v,'cpa').toFixed(0):null; }
+  if (metric==='spend')    return +sum(dayRows,'spend').toFixed(0);
+  if (metric==='hookRate') { const v=dayRows.filter(r=>r.hookRate!==null); return v.length?+avg(v,'hookRate').toFixed(1):null; }
+  return null;
+}
+
+// ── Comparison period resolution ─────────────────────
+function resolveComparisonPeriod() {
+  const { mode, from: cFrom, to: cTo } = S.dateCompare;
+  if (mode === 'none') return null;
+
+  const allRows = activeRows();
+  if (!hasDateCol(allRows)) return null;
+
+  const { min: dataMin, max: dataMax } = getDataDateRange(allRows);
+  const mf = S.dateFilter.from || dataMin;
+  const mt = S.dateFilter.to   || dataMax;
+  if (!mf || !mt) return null;
+
+  let compFrom, compTo;
+  if (mode === 'custom') {
+    compFrom = cFrom; compTo = cTo;
+  } else if (mode === 'previous') {
+    const days = Math.round((new Date(mt) - new Date(mf)) / 86400000) + 1;
+    const cToD = new Date(mf); cToD.setDate(cToD.getDate() - 1);
+    const cFrD = new Date(cToD); cFrD.setDate(cFrD.getDate() - days + 1);
+    compFrom = isoStr(cFrD); compTo = isoStr(cToD);
+  } else if (mode === 'year') {
+    const cFrD = new Date(mf); cFrD.setFullYear(cFrD.getFullYear() - 1);
+    const cToD = new Date(mt); cToD.setFullYear(cToD.getFullYear() - 1);
+    compFrom = isoStr(cFrD); compTo = isoStr(cToD);
+  }
+  if (!compFrom || !compTo) return null;
+
+  const compFiltered = filterRowsByRange(allRows, compFrom, compTo);
+  return { rows: aggregateByAd(compFiltered), from: compFrom, to: compTo, mode,
+           label: `${fmtDate(compFrom)} – ${fmtDate(compTo)}` };
+}
+
+// ── UI Controls ──────────────────────────────────────
 function applyDateFilter() {
   S.dateFilter.from = document.getElementById('date-from')?.value || '';
   S.dateFilter.to   = document.getElementById('date-to')?.value   || '';
-  updateDateFilterInfo();
+  S.dateCompare.from = document.getElementById('comp-from')?.value || '';
+  S.dateCompare.to   = document.getElementById('comp-to')?.value   || '';
+  updateDateFilterUI();
+  rerenderActivePage();
+}
+
+function applyCompareMode() {
+  S.dateCompare.mode = document.getElementById('compare-mode')?.value || 'none';
+  const cw = document.getElementById('comp-custom-wrap');
+  if (cw) cw.style.display = S.dateCompare.mode === 'custom' ? 'flex' : 'none';
+  updateDateFilterUI();
   rerenderActivePage();
 }
 
 function clearDateFilter() {
-  S.dateFilter = { from: '', to: '' };
-  const f = document.getElementById('date-from'); if (f) f.value = '';
-  const t = document.getElementById('date-to');   if (t) t.value = '';
+  S.dateFilter  = { from: '', to: '' };
+  S.dateCompare = { mode: 'none', from: '', to: '' };
+  ['date-from','date-to','comp-from','comp-to'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const cm = document.getElementById('compare-mode'); if (cm) cm.value = 'none';
+  const cw = document.getElementById('comp-custom-wrap'); if (cw) cw.style.display = 'none';
   document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('dp-active'));
   document.getElementById('dp-all')?.classList.add('dp-active');
-  updateDateFilterInfo();
+  updateDateFilterUI();
   rerenderActivePage();
 }
 
 function setDatePreset(days) {
   const rows = activeRows();
-  const hasDateCol = rows.some(r => r.rowDate);
-  let toDate, fromDate;
-  if (hasDateCol) {
-    const sorted = rows.map(r => r.rowDate).filter(Boolean).map(d => new Date(d)).sort((a, b) => b - a);
-    toDate = sorted[0] || new Date();
-  } else {
-    toDate = new Date();
-  }
-  fromDate = new Date(toDate);
-  fromDate.setDate(fromDate.getDate() - (days - 1));
-
-  const fmt = d => d.toISOString().slice(0, 10);
-  const f = document.getElementById('date-from'); if (f) f.value = fmt(fromDate);
-  const t = document.getElementById('date-to');   if (t) t.value = fmt(toDate);
-
+  const { max } = getDataDateRange(rows);
+  const toD = max ? new Date(max) : new Date();
+  const frD = new Date(toD); frD.setDate(frD.getDate() - (days - 1));
+  const f = document.getElementById('date-from'); if (f) f.value = isoStr(frD);
+  const t = document.getElementById('date-to');   if (t) t.value = isoStr(toD);
   document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('dp-active'));
   document.getElementById('dp-' + days)?.classList.add('dp-active');
   applyDateFilter();
 }
 
-function updateDateFilterInfo() {
-  const el = document.getElementById('date-filter-info');
-  if (!el) return;
-  const rows = activeRows();
-  const hasDateCol = rows.some(r => r.rowDate);
+function updateDateFilterUI() {
+  const rows   = activeRows();
+  const infoEl = document.getElementById('date-filter-info');
+  const compEl = document.getElementById('date-comp-info');
+  if (!infoEl) return;
 
-  if (!hasDateCol && rows.length) {
-    el.textContent = 'No "Day" column found — export with Day breakdown from Meta Ads Manager for per-date filtering';
-    el.style.color = 'var(--amber)';
+  if (!hasDateCol(rows) && rows.length) {
+    infoEl.innerHTML = `<span style="color:var(--amber)">⚠ No "Day" column — export with Day breakdown from Meta Ads Manager</span>`;
+    if (compEl) compEl.textContent = '';
     return;
   }
-  el.style.color = 'var(--text3)';
 
+  const { min, max, all } = getDataDateRange(rows);
   const { from, to } = S.dateFilter;
+  const unique = [...new Set(all)];
+
   if (!from && !to) {
-    const dates = rows.map(r => r.rowDate).filter(Boolean).sort();
-    const unique = [...new Set(dates)];
-    el.textContent = unique.length
-      ? `${unique.length} day${unique.length !== 1 ? 's' : ''} available: ${fmtDate(unique[0])} → ${fmtDate(unique[unique.length - 1])}`
-      : '';
-    document.getElementById('dp-all')?.classList.add('dp-active');
-    return;
+    infoEl.textContent = unique.length ? `${unique.length} days available · ${fmtDate(min)} → ${fmtDate(max)}` : '';
+  } else {
+    const inRange = all.filter(d => (!from||d>=from) && (!to||d<=to));
+    const uInRange = [...new Set(inRange)];
+    infoEl.textContent = `${uInRange.length} days in range · ${filteredRows().length} ads`;
   }
 
-  const filtered = filteredRows();
-  const unique = [...new Set(rows.filter(r => {
-    if (!r.rowDate) return false;
-    const d = new Date(r.rowDate);
-    if (from && d < new Date(from)) return false;
-    if (to   && d > new Date(to))   return false;
-    return true;
-  }).map(r => r.rowDate))];
-  el.textContent = `${filtered.length} ad${filtered.length !== 1 ? 's' : ''} · ${unique.length} day${unique.length !== 1 ? 's' : ''} in range`;
+  if (compEl) {
+    const comp = resolveComparisonPeriod();
+    if (comp) {
+      const modeLabel = { previous:'Previous period', year:'Same period last year', custom:'Custom period' }[S.dateCompare.mode] || '';
+      compEl.innerHTML = `<span class="comp-chip">vs ${modeLabel}: ${comp.label}</span>`;
+    } else {
+      compEl.textContent = '';
+    }
+  }
 }
 
 function updateDateFilterBar(pageName) {
   const bar = document.getElementById('date-filter-bar');
   if (!bar) return;
-  const showOn = ['dashboard', 'campaigns', 'creatives', 'compare', 'insights'];
+  const showOn = ['dashboard','campaigns','creatives','compare','insights'];
   bar.style.display = showOn.includes(pageName) ? 'flex' : 'none';
-  if (showOn.includes(pageName)) updateDateFilterInfo();
+  if (showOn.includes(pageName)) updateDateFilterUI();
 }
 
 function rerenderActivePage() {
   const active = document.querySelector('.page.active');
   if (!active) return;
   const pg = active.id.replace('page-', '');
-  if (pg === 'dashboard') renderDashboard();
-  if (pg === 'campaigns') renderCampaigns();
-  if (pg === 'creatives') renderCreatives();
-  if (pg === 'compare')   renderCompare();
-  if (pg === 'insights')  renderInsights();
+  if (pg==='dashboard') renderDashboard();
+  if (pg==='campaigns') renderCampaigns();
+  if (pg==='creatives') renderCreatives();
+  if (pg==='compare')   renderCompare();
+  if (pg==='insights')  renderInsights();
 }
 
 // ═══════════════════════════════════════════════════
