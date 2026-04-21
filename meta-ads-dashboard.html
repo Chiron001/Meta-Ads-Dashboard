@@ -240,6 +240,7 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .m-up{background:rgba(34,201,147,0.15);color:var(--green);}
 .m-down{background:rgba(240,79,95,0.15);color:var(--red);}
 .m-flat{background:rgba(139,144,168,0.15);color:var(--text2);}
+.m-new{background:rgba(245,166,35,0.15);color:var(--amber);}
 
 /* Lightbox */
 #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center;}
@@ -583,16 +584,20 @@ textarea.form-input{resize:vertical;min-height:80px;}
   <!-- COMPARE -->
   <div id="page-compare" class="page">
     <div class="panel">
-      <div class="section-hdr"><h2>All creatives — sortable</h2>
-        <select id="sort-metric" onchange="renderCompare()">
-          <option value="roas">ROAS</option><option value="ctr">CTR</option>
-          <option value="hookRate">Hook Rate</option><option value="holdRate">Hold Rate</option>
-          <option value="cpa">CPA</option><option value="spend">Spend</option>
-          <option value="impressions">Impressions</option><option value="frequency">Frequency</option>
-        </select>
+      <div class="section-hdr">
+        <h2 id="compare-mode-title">All creatives — sortable</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="sort-metric" onchange="renderCompare()">
+            <option value="roas">ROAS</option><option value="ctr">CTR</option>
+            <option value="hookRate">Hook Rate</option><option value="holdRate">Hold Rate</option>
+            <option value="cpa">CPA</option><option value="spend">Spend</option>
+            <option value="impressions">Impressions</option><option value="frequency">Frequency</option>
+          </select>
+        </div>
       </div>
+      <div id="compare-mode-hint" style="font-size:11px;color:var(--text3);margin-bottom:12px"></div>
       <div class="table-wrap" id="compare-table">
-        <div class="empty"><div class="empty-icon">📊</div><h3>No data</h3><p>Upload reports first.</p></div>
+        <div class="empty"><div class="empty-icon">📊</div><h3>No data</h3><p>Upload a report first.</p></div>
       </div>
     </div>
   </div>
@@ -600,21 +605,47 @@ textarea.form-input{resize:vertical;min-height:80px;}
   <!-- TRENDS -->
   <div id="page-trends" class="page">
     <div class="panel" style="margin-bottom:16px">
-      <div class="section-hdr"><h2>Compare two reports</h2>
-        <select id="trends-metric" onchange="renderTrendsChart()">
+      <div class="section-hdr">
+        <h2>Period A vs Period B</h2>
+        <select id="trends-metric" onchange="renderTrends()">
           <option value="roas">ROAS</option><option value="ctr">CTR%</option>
-          <option value="hookRate">Hook Rate%</option><option value="holdRate">Hold Rate%</option>
-          <option value="cpa">CPA</option><option value="spend">Spend</option>
+          <option value="spend">Spend</option><option value="cpa">CPA</option>
+          <option value="hookRate">Hook Rate%</option>
         </select>
       </div>
-      <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Select Report A (blue) and Report B (green) to compare. Actual date ranges are used.</p>
-      <div class="trend-report-sel" id="trend-report-sel"></div>
+      <div class="two-col" style="margin-bottom:10px">
+        <div>
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:6px">Period A (blue)</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <input type="date" id="trend-a-from" class="date-input" onchange="renderTrends()">
+            <span style="color:var(--text3)">→</span>
+            <input type="date" id="trend-a-to" class="date-input" onchange="renderTrends()">
+          </div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--green);margin-bottom:6px">Period B (green)</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <input type="date" id="trend-b-from" class="date-input" onchange="renderTrends()">
+            <span style="color:var(--text3)">→</span>
+            <input type="date" id="trend-b-to" class="date-input" onchange="renderTrends()">
+          </div>
+        </div>
+      </div>
+      <div id="trends-quick-sel" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
       <div class="chart-wrap" style="height:220px"><canvas id="trendsChart"></canvas></div>
     </div>
-    <div class="panel">
-      <div class="section-hdr"><h2>Creative momentum</h2></div>
-      <div id="trend-table">
-        <div class="empty"><div class="empty-icon">↗</div><h3>Select 2 reports above</h3></div>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="section-hdr"><h2>Creative momentum</h2><span id="momentum-meta" style="font-size:10px;color:var(--text3)"></span></div>
+      <div id="trend-table"><div class="empty"><div class="empty-icon">↗</div><h3>Set periods above</h3><p>Select Period A and Period B date ranges to see momentum.</p></div></div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="section-hdr"><h2>Best days of week</h2><span style="font-size:10px;color:var(--text3)">Avg ROAS · total spend per weekday</span></div>
+        <div class="chart-wrap" style="height:190px"><canvas id="dowChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="section-hdr"><h2>7-day rolling ROAS</h2><span style="font-size:10px;color:var(--text3)">Account-wide momentum</span></div>
+        <div class="chart-wrap" style="height:190px"><canvas id="rollingChart"></canvas></div>
       </div>
     </div>
   </div>
@@ -1382,9 +1413,10 @@ function xA(o = {}) { return { ticks: { color: CG.color, font: CG.font, maxTicks
 function yA(o = {}) { return { ticks: { color: CG.color, font: CG.font }, grid: { color: CG.grid }, ...o }; }
 
 function mkChart(id, cfg) {
-  if (S.charts[id]) { try { S.charts[id].destroy(); } catch(e) {} }
+  if (S.charts[id]) { try { S.charts[id].destroy(); } catch(e) {} delete S.charts[id]; }
   const el = document.getElementById(id);
   if (!el) return;
+  if (!cfg) return; // caller passes null to just destroy
   S.charts[id] = new Chart(el.getContext('2d'), cfg);
 }
 
@@ -1970,73 +2002,152 @@ function setCF(key, val) { S.creativeFilter[key] = val; renderCreatives(); }
 // ═══════════════════════════════════════════════════
 function renderCompare() {
   const el = document.getElementById('compare-table');
+  const hintEl = document.getElementById('compare-mode-hint');
+  const titleEl = document.getElementById('compare-mode-title');
+  const sortSel = document.getElementById('sort-metric');
   const data = filteredRows();
   S._lastRenderedRows = data;
-  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><h3>No data</h3></div>`; return; }
-  const metric = document.getElementById('sort-metric')?.value || 'roas';
-  const sorted = [...data].sort((a, b) => b[metric] - a[metric]);
-  const maxCTR = Math.max(...sorted.map(c => c.ctr || 0));
-  const hasVideo = sorted.some(c => c.hookRate !== null);
-  const hasAtc   = sorted.some(c => c.addsToCart > 0);
-  const hasRev   = sorted.some(c => c.revenue > 0);
+  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><h3>No data</h3><p>Upload a report first.</p></div>`; return; }
 
-  el.innerHTML = `<table>
-    <thead><tr>
-      <th>Creative</th><th>Campaign</th><th>Ad Set</th><th>Format</th><th>Status</th>
-      <th>Impr.</th><th>Reach</th><th>Freq.</th>
-      <th>CTR%</th><th>CPM</th><th>CPC</th>
-      ${hasVideo ? '<th>Hook%</th><th>Hold%</th>' : ''}
-      ${hasAtc ? '<th>ATC</th>' : ''}
-      <th>Purchases</th><th>CPA</th>
-      ${hasRev ? '<th>Revenue</th>' : ''}
-      <th>ROAS</th><th>Spend</th><th>Score</th>
-    </tr></thead>
-    <tbody>${sorted.map(c => {
-      const score = c.tier === 'top' ? 'A' : c.tier === 'mid' ? 'B' : 'C';
-      const pct = maxCTR > 0 ? Math.round((c.ctr / maxCTR) * 100) : 0;
-      const thumb = c.url
-        ? (c.mediaType === 'video' ? `<video src="${c.url}" class="td-thumb" muted></video>` : `<img src="${c.url}" class="td-thumb" alt="">`)
-        : `<div class="td-thumb" style="display:flex;align-items:center;justify-content:center;font-size:12px">🖼</div>`;
-      return `<tr>
-        <td><div class="td-name">${thumb}<span title="${c.adName}">${c.adName.length > 22 ? c.adName.slice(0, 22) + '…' : c.adName}</span></div></td>
-        <td style="font-size:11px;color:var(--text3);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.campaignName}</td>
-        <td style="font-size:11px;color:var(--text3);max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.adsetName}</td>
-        <td>${c.format}</td>
-        <td><span class="spill sp-${c.status}">${c.status}</span></td>
-        <td>${fmtNum(c.impressions)}</td>
-        <td>${c.reach ? fmtNum(c.reach) : '—'}</td>
-        <td style="color:${c.frequency>3?'var(--red)':c.frequency>2?'var(--amber)':'var(--text2)'}">${c.frequency ? c.frequency.toFixed(1) + 'x' : '—'}</td>
-        <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>${c.ctr.toFixed(2)}%</div></td>
-        <td>${c.cpm ? S.currency + c.cpm.toFixed(0) : '—'}</td>
-        <td>${c.cpc ? S.currency + c.cpc.toFixed(0) : '—'}</td>
-        ${hasVideo ? `<td style="color:${c.hookRate!==null?(c.hookRate>=25?'var(--green)':c.hookRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.hookRate !== null ? c.hookRate + '%' : '—'}</td><td style="color:${c.holdRate!==null?(c.holdRate>=30?'var(--green)':c.holdRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.holdRate !== null ? c.holdRate + '%' : '—'}</td>` : ''}
-        ${hasAtc ? `<td>${c.addsToCart || '—'}</td>` : ''}
-        <td>${c.purchases || '—'}</td>
-        <td>${c.cpa ? S.currency + c.cpa.toFixed(0) : '—'}</td>
-        ${hasRev ? `<td>${c.revenue ? S.currency + fmtNum(c.revenue) : '—'}</td>` : ''}
-        <td style="color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${c.roas ? c.roas.toFixed(2) + 'x' : '—'}</td>
-        <td>${c.spend ? S.currency + fmtNum(c.spend) : '—'}</td>
-        <td><div class="score-dot s-${score}">${score}</div></td>
-      </tr>`;
-    }).join('')}</tbody></table>`;
+  const comp = resolveComparisonPeriod();
+
+  if (comp && comp.rows.length) {
+    // ── COMPARISON MODE ──────────────────────────────
+    if (titleEl) titleEl.textContent = 'Period comparison';
+    if (sortSel) sortSel.style.display = 'none';
+    const mainFrom = S.dateFilter.from || getDataDateRange(activeRows()).min;
+    const mainTo   = S.dateFilter.to   || getDataDateRange(activeRows()).max;
+    if (hintEl) hintEl.innerHTML =
+      `<span style="color:var(--accent)">▐ Main</span> ${fmtDate(mainFrom)} – ${fmtDate(mainTo)}
+       &nbsp;vs&nbsp; <span style="color:var(--green)">▐ Comp</span> ${comp.label}`;
+
+    // build map: adName → comp row
+    const compMap = new Map(comp.rows.map(r => [r.adName, r]));
+    const mainMap = new Map(data.map(r => [r.adName, r]));
+    const allNames = [...new Set([...data.map(r => r.adName), ...comp.rows.map(r => r.adName)])];
+
+    const enriched = allNames.map(name => {
+      const m = mainMap.get(name) || null;
+      const c = compMap.get(name) || null;
+      const rDelta = (m && c && c.roas)  ? +((m.roas  - c.roas)  / Math.abs(c.roas)  * 100).toFixed(1) : null;
+      const cDelta = (m && c && c.ctr)   ? +((m.ctr   - c.ctr)   / Math.abs(c.ctr)   * 100).toFixed(1) : null;
+      const sDelta = (m && c && c.spend) ? +((m.spend - c.spend) / Math.abs(c.spend) * 100).toFixed(1) : null;
+      const pDelta = (m && c && c.purchases) ? +((m.purchases - c.purchases) / Math.abs(c.purchases) * 100).toFixed(1) : null;
+      const badge  = !m ? 'ended' : !c ? 'new' : null;
+      return { name, m, c, rDelta, cDelta, sDelta, pDelta, badge };
+    }).sort((a, b) => {
+      // sort by ROAS delta desc; NEW first, ENDED last
+      if (a.badge === 'new' && b.badge !== 'new') return -1;
+      if (b.badge === 'new' && a.badge !== 'new') return 1;
+      if (a.badge === 'ended' && b.badge !== 'ended') return 1;
+      if (b.badge === 'ended' && a.badge !== 'ended') return -1;
+      return (b.rDelta || 0) - (a.rDelta || 0);
+    });
+
+    const deltaBadge = (v, suffix='%') => {
+      if (v === null) return '<span style="color:var(--text3)">—</span>';
+      const cls = v > 0 ? 'delta-up' : v < 0 ? 'delta-down' : 'delta-neu';
+      return `<span class="${cls}" style="font-size:11px;font-weight:600">${v > 0 ? '+' : ''}${v}${suffix}</span>`;
+    };
+    const roasCell = (row, bold=false) => row
+      ? `<span style="${bold?'font-weight:600;':''}color:${row.roas>=4?'var(--green)':row.roas>=2?'var(--amber)':'var(--red)'}">${row.roas?row.roas.toFixed(2)+'x':'—'}</span>`
+      : '<span style="color:var(--text3)">—</span>';
+
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th>Creative</th>
+        <th>Main ROAS</th><th>Comp ROAS</th><th>ROAS Δ</th>
+        <th>Main Spend</th><th>Comp Spend</th><th>Spend Δ</th>
+        <th>Main CTR%</th><th>Comp CTR%</th><th>CTR Δ</th>
+        <th>Main Conv.</th><th>Comp Conv.</th><th>Conv. Δ</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody>${enriched.map(e => {
+        const statusBadge = e.badge === 'new'
+          ? `<span style="background:rgba(34,201,147,.15);color:var(--green);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600">★ NEW</span>`
+          : e.badge === 'ended'
+          ? `<span style="background:rgba(240,79,95,.12);color:var(--red);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600">✕ ENDED</span>`
+          : `<span style="background:rgba(79,110,247,.12);color:var(--accent);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600">↔ ACTIVE</span>`;
+        return `<tr>
+          <td style="font-weight:500;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e.name}">${e.name.length>24?e.name.slice(0,24)+'…':e.name}</td>
+          <td>${roasCell(e.m,true)}</td>
+          <td>${roasCell(e.c)}</td>
+          <td>${deltaBadge(e.rDelta)}</td>
+          <td style="color:var(--text2)">${e.m?.spend ? S.currency+fmtNum(e.m.spend) : '—'}</td>
+          <td style="color:var(--text3)">${e.c?.spend ? S.currency+fmtNum(e.c.spend) : '—'}</td>
+          <td>${deltaBadge(e.sDelta)}</td>
+          <td style="color:var(--text2)">${e.m?.ctr ? e.m.ctr.toFixed(2)+'%' : '—'}</td>
+          <td style="color:var(--text3)">${e.c?.ctr ? e.c.ctr.toFixed(2)+'%' : '—'}</td>
+          <td>${deltaBadge(e.cDelta)}</td>
+          <td style="color:var(--text2)">${e.m?.purchases || '—'}</td>
+          <td style="color:var(--text3)">${e.c?.purchases || '—'}</td>
+          <td>${deltaBadge(e.pDelta)}</td>
+          <td>${statusBadge}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+
+  } else {
+    // ── SORTABLE ALL-METRICS MODE ────────────────────
+    if (titleEl) titleEl.textContent = 'All creatives — sortable';
+    if (sortSel) sortSel.style.display = '';
+    if (hintEl) hintEl.innerHTML = comp === null && S.dateCompare.mode !== 'none'
+      ? '<span style="color:var(--amber)">⚠ No comparison data found for the selected period.</span>'
+      : '<span style="color:var(--text3)">Set a comparison period in the date filter bar to see period-over-period deltas.</span>';
+
+    const metric = sortSel?.value || 'roas';
+    const sorted = [...data].sort((a, b) => b[metric] - a[metric]);
+    const maxCTR = Math.max(...sorted.map(c => c.ctr || 0));
+    const hasVideo = sorted.some(c => c.hookRate !== null);
+    const hasAtc   = sorted.some(c => c.addsToCart > 0);
+    const hasRev   = sorted.some(c => c.revenue > 0);
+
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th>Creative</th><th>Campaign</th><th>Ad Set</th><th>Format</th><th>Status</th>
+        <th>Impr.</th><th>Reach</th><th>Freq.</th>
+        <th>CTR%</th><th>CPM</th><th>CPC</th>
+        ${hasVideo ? '<th>Hook%</th><th>Hold%</th>' : ''}
+        ${hasAtc ? '<th>ATC</th>' : ''}
+        <th>Purchases</th><th>CPA</th>
+        ${hasRev ? '<th>Revenue</th>' : ''}
+        <th>ROAS</th><th>Spend</th><th>Score</th>
+      </tr></thead>
+      <tbody>${sorted.map(c => {
+        const score = c.tier === 'top' ? 'A' : c.tier === 'mid' ? 'B' : 'C';
+        const pct = maxCTR > 0 ? Math.round((c.ctr / maxCTR) * 100) : 0;
+        const thumb = c.url
+          ? (c.mediaType === 'video' ? `<video src="${c.url}" class="td-thumb" muted></video>` : `<img src="${c.url}" class="td-thumb" alt="">`)
+          : `<div class="td-thumb" style="display:flex;align-items:center;justify-content:center;font-size:12px">🖼</div>`;
+        return `<tr>
+          <td><div class="td-name">${thumb}<span title="${c.adName}">${c.adName.length > 22 ? c.adName.slice(0, 22) + '…' : c.adName}</span></div></td>
+          <td style="font-size:11px;color:var(--text3);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.campaignName}</td>
+          <td style="font-size:11px;color:var(--text3);max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.adsetName}</td>
+          <td>${c.format}</td>
+          <td><span class="spill sp-${c.status}">${c.status}</span></td>
+          <td>${fmtNum(c.impressions)}</td>
+          <td>${c.reach ? fmtNum(c.reach) : '—'}</td>
+          <td style="color:${c.frequency>3?'var(--red)':c.frequency>2?'var(--amber)':'var(--text2)'}">${c.frequency ? c.frequency.toFixed(1) + 'x' : '—'}</td>
+          <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>${c.ctr.toFixed(2)}%</div></td>
+          <td>${c.cpm ? S.currency + c.cpm.toFixed(0) : '—'}</td>
+          <td>${c.cpc ? S.currency + c.cpc.toFixed(0) : '—'}</td>
+          ${hasVideo ? `<td style="color:${c.hookRate!==null?(c.hookRate>=25?'var(--green)':c.hookRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.hookRate !== null ? c.hookRate + '%' : '—'}</td><td style="color:${c.holdRate!==null?(c.holdRate>=30?'var(--green)':c.holdRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.holdRate !== null ? c.holdRate + '%' : '—'}</td>` : ''}
+          ${hasAtc ? `<td>${c.addsToCart || '—'}</td>` : ''}
+          <td>${c.purchases || '—'}</td>
+          <td>${c.cpa ? S.currency + c.cpa.toFixed(0) : '—'}</td>
+          ${hasRev ? `<td>${c.revenue ? S.currency + fmtNum(c.revenue) : '—'}</td>` : ''}
+          <td style="color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${c.roas ? c.roas.toFixed(2) + 'x' : '—'}</td>
+          <td>${c.spend ? S.currency + fmtNum(c.spend) : '—'}</td>
+          <td><div class="score-dot s-${score}">${score}</div></td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
 }
 
 // ═══════════════════════════════════════════════════
 // TRENDS
 // ═══════════════════════════════════════════════════
-function renderTrends() {
-  const sel = document.getElementById('trend-report-sel');
-  sel.innerHTML = S.reports.map(r =>
-    `<span class="report-chip ${r.id === S.trendReportA ? 'sel-a' : r.id === S.trendReportB ? 'sel-b' : ''}"
-      onclick="selectTrendReport(${r.id})">${r.label}${r.dateStart ? ' (' + fmtDate(r.dateStart) + ')' : ''}</span>`
-  ).join('');
-  if (S.trendReportA && S.trendReportB) {
-    renderTrendsChart();
-    renderMomentumTable();
-  }
-}
-
 function selectTrendReport(id) {
+  // legacy compat — no-op when using single-excel daily mode
   if (!S.trendReportA || (S.trendReportA && S.trendReportB)) {
     S.trendReportA = id; S.trendReportB = null;
   } else if (id !== S.trendReportA) {
@@ -2045,74 +2156,257 @@ function selectTrendReport(id) {
   renderTrends();
 }
 
-function renderTrendsChart() {
-  const rA = S.reports.find(r => r.id === S.trendReportA);
-  const rB = S.reports.find(r => r.id === S.trendReportB);
-  if (!rA || !rB) return;
+function renderTrends() {
+  const allRows = activeRows();
+  if (!hasDateCol(allRows)) {
+    document.getElementById('trends-quick-sel').innerHTML =
+      '<span style="color:var(--text3);font-size:11px">Upload a daily-breakdown Excel (with Day column) to enable Trends.</span>';
+    return;
+  }
+
+  const { min, max } = getDataDateRange(allRows);
+  renderTrendsQuickSel(min, max);
+
+  // Auto-init dates if empty
+  const aFrom = document.getElementById('trend-a-from');
+  const aTo   = document.getElementById('trend-a-to');
+  const bFrom = document.getElementById('trend-b-from');
+  const bTo   = document.getElementById('trend-b-to');
+  if (!aFrom.value && min && max) {
+    const mid = new Date((new Date(min).getTime() + new Date(max).getTime()) / 2);
+    const midStr = isoStr(mid);
+    bFrom.value = min; bTo.value = midStr;
+    aFrom.value = isoStr(new Date(mid.getTime() + 86400000)); aTo.value = max;
+  }
+
+  const af = aFrom.value, at = aTo.value, bf = bFrom.value, bt = bTo.value;
+  renderTrendsPeriodChart(allRows, af, at, bf, bt);
+  renderMomentumTableV2(allRows, af, at, bf, bt);
+  renderDayOfWeekChart(allRows, af || min, at || max);
+  renderRollingChart(allRows, af || min, at || max);
+}
+
+function renderTrendsQuickSel(min, max) {
+  const el = document.getElementById('trends-quick-sel');
+  if (!el) return;
+  const maxD = new Date(max), minD = new Date(min);
+  const today = maxD;
+  function preset(label, days) {
+    const aTo = isoStr(today);
+    const aFr = isoStr(new Date(today.getTime() - (days-1)*86400000));
+    const bTo = isoStr(new Date(new Date(aFr).getTime() - 86400000));
+    const bFr = isoStr(new Date(new Date(bTo).getTime() - (days-1)*86400000));
+    // only show if data covers it
+    if (new Date(bFr) < minD) return '';
+    return `<button class="pill" onclick="setTrendsPreset('${aFr}','${aTo}','${bFr}','${bTo}')">${label}</button>`;
+  }
+  // month presets
+  const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+  const lastMonthStart = new Date(today.getFullYear(), today.getMonth()-1, 1);
+  const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lmf = isoStr(lastMonthStart), lmt = isoStr(lastMonthEnd);
+  const tmf = isoStr(thisMonthStart), tmt = isoStr(today);
+
+  const monthBtn = new Date(lmf) >= minD
+    ? `<button class="pill" onclick="setTrendsPreset('${tmf}','${tmt}','${lmf}','${lmt}')">This month vs Last month</button>`
+    : '';
+
+  el.innerHTML = [
+    preset('Last 7d vs Prev 7d', 7),
+    preset('Last 14d vs Prev 14d', 14),
+    preset('Last 30d vs Prev 30d', 30),
+    monthBtn
+  ].filter(Boolean).join('');
+}
+
+function setTrendsPreset(aFrom, aTo, bFrom, bTo) {
+  document.getElementById('trend-a-from').value = aFrom;
+  document.getElementById('trend-a-to').value   = aTo;
+  document.getElementById('trend-b-from').value = bFrom;
+  document.getElementById('trend-b-to').value   = bTo;
+  renderTrends();
+}
+
+function renderTrendsPeriodChart(allRows, aFrom, aTo, bFrom, bTo) {
+  if (!aFrom || !aTo || !bFrom || !bTo) { mkChart('trendsChart',null); return; }
   const metric = document.getElementById('trends-metric')?.value || 'roas';
-  const allNames = [...new Set([...rA.rows.map(r => r.adName), ...rB.rows.map(r => r.adName)])];
-  const top8 = allNames.map(n => {
-    const row = rA.rows.find(r => r.adName === n) || rB.rows.find(r => r.adName === n);
-    return { n, v: row ? (row[metric] || 0) : 0 };
-  }).sort((a, b) => b.v - a.v).slice(0, 8).map(x => x.n);
 
-  const datasets = top8.map((name, i) => ({
-    label: name.length > 16 ? name.slice(0, 16) + '…' : name,
-    data: [
-      rA.rows.find(r => r.adName === name)?.[metric] ?? null,
-      rB.rows.find(r => r.adName === name)?.[metric] ?? null,
-    ],
-    borderColor: COLORS[i], backgroundColor: 'transparent',
-    borderWidth: 2, tension: 0.3, pointRadius: 5, pointBackgroundColor: COLORS[i], spanGaps: true,
-  }));
+  const rowsA = filterRowsByRange(allRows, aFrom, aTo);
+  const rowsB = filterRowsByRange(allRows, bFrom, bTo);
 
+  // Group by date within each period
+  const byDateA = {};
+  rowsA.forEach(r => { if(r.rowDate){ (byDateA[r.rowDate]=byDateA[r.rowDate]||[]).push(r); } });
+  const byDateB = {};
+  rowsB.forEach(r => { if(r.rowDate){ (byDateB[r.rowDate]=byDateB[r.rowDate]||[]).push(r); } });
+
+  const datesA = datesBetween(aFrom, aTo);
+  const datesB = datesBetween(bFrom, bTo);
+  const len = Math.max(datesA.length, datesB.length);
+  const labels = Array.from({length:len}, (_,i) => `Day ${i+1}`);
+
+  const dataA = datesA.map(d => dayMetric(byDateA[d]||[], metric));
+  const dataB = datesB.map(d => dayMetric(byDateB[d]||[], metric));
+
+  const metricLabel = {roas:'ROAS',ctr:'CTR%',spend:'Spend',cpa:'CPA',hookRate:'Hook%'}[metric] || metric;
   mkChart('trendsChart', {
     type: 'line',
-    data: { labels: [rA.label, rB.label], datasets },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#8b90a8', font: { size: 10 }, boxWidth: 9, padding: 7 } } },
-      scales: { x: xA(), y: yA() } }
+    data: {
+      labels,
+      datasets: [
+        { label: `Period A (${fmtDate(aFrom)}–${fmtDate(aTo)}) ${metricLabel}`, data: dataA,
+          borderColor:'#4f6ef7', backgroundColor:'rgba(79,110,247,0.08)', borderWidth:2,
+          tension:0.3, pointRadius:3, pointBackgroundColor:'#4f6ef7', spanGaps:true, fill:true },
+        { label: `Period B (${fmtDate(bFrom)}–${fmtDate(bTo)}) ${metricLabel}`, data: dataB,
+          borderColor:'#22c993', backgroundColor:'rgba(34,201,147,0.06)', borderWidth:2,
+          borderDash:[5,4], tension:0.3, pointRadius:3, pointBackgroundColor:'#22c993', spanGaps:true, fill:true }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#8b90a8', font:{size:10}, boxWidth:10, padding:8 } } },
+      scales:{ x: xA(), y: yA() } }
   });
 }
 
-function renderMomentumTable() {
-  const rA = S.reports.find(r => r.id === S.trendReportA);
-  const rB = S.reports.find(r => r.id === S.trendReportB);
+function renderMomentumTableV2(allRows, aFrom, aTo, bFrom, bTo) {
   const el = document.getElementById('trend-table');
-  if (!rA || !rB) return;
-  const allNames = [...new Set([...rA.rows.map(r => r.adName), ...rB.rows.map(r => r.adName)])];
+  const metaEl = document.getElementById('momentum-meta');
+  if (!aFrom || !aTo || !bFrom || !bTo) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">↗</div><h3>Set periods above</h3><p>Select Period A and Period B date ranges to see momentum.</p></div>`;
+    return;
+  }
+
+  const rowsA = aggregateByAd(filterRowsByRange(allRows, aFrom, aTo));
+  const rowsB = aggregateByAd(filterRowsByRange(allRows, bFrom, bTo));
+  const mapA  = new Map(rowsA.map(r => [r.adName, r]));
+  const mapB  = new Map(rowsB.map(r => [r.adName, r]));
+  const allNames = [...new Set([...rowsA.map(r => r.adName), ...rowsB.map(r => r.adName)])];
+
   const rows = allNames.map(name => {
-    const rowA = rA.rows.find(r => r.adName === name);
-    const rowB = rB.rows.find(r => r.adName === name);
-    let mom = 'flat', momLbl = 'Stable';
-    if (rowA && rowB) {
-      const d = rowA.roas - rowB.roas;
-      if (d > 0.3)       { mom = 'up';   momLbl = '↑ Improving'; }
-      else if (d < -0.3) { mom = 'down'; momLbl = '↓ Declining'; }
+    const a = mapA.get(name) || null;
+    const b = mapB.get(name) || null;
+    let momCls='flat', momLbl='→ Stable';
+    if (!a && b)  { momCls='new';  momLbl='✕ Not running'; }
+    else if (a && !b) { momCls='new';  momLbl='★ New'; }
+    else if (a && b) {
+      const rd = (a.roas - b.roas) / (Math.abs(b.roas)||1) * 100;
+      if (rd > 10)       { momCls='up';   momLbl='↑ Improving'; }
+      else if (rd < -10) { momCls='down'; momLbl='↓ Declining'; }
     }
-    return { name, rowA, rowB, mom, momLbl };
-  }).sort((a, b) => (b.rowA?.roas || 0) - (a.rowA?.roas || 0));
+    const rDelta = (a && b && b.roas)  ? +((a.roas-b.roas)/Math.abs(b.roas)*100).toFixed(1) : null;
+    const cDelta = (a && b && b.ctr)   ? +((a.ctr -b.ctr )/Math.abs(b.ctr )*100).toFixed(1) : null;
+    return { name, a, b, rDelta, cDelta, momCls, momLbl };
+  }).sort((x, y) => {
+    if (x.momCls==='new' && y.momCls!=='new') return -1;
+    if (y.momCls==='new' && x.momCls!=='new') return 1;
+    if (x.momCls==='up' && y.momCls!=='up') return -1;
+    if (y.momCls==='up' && x.momCls!=='up') return 1;
+    return (y.a?.roas||0) - (x.a?.roas||0);
+  });
+
+  if (metaEl) metaEl.textContent = `${rows.length} ads · A: ${fmtDate(aFrom)}–${fmtDate(aTo)} vs B: ${fmtDate(bFrom)}–${fmtDate(bTo)}`;
+
+  const dBadge = (v) => v===null ? '<span style="color:var(--text3)">—</span>'
+    : `<span style="font-size:11px;font-weight:600;color:${v>0?'var(--green)':v<0?'var(--red)':'var(--text3)'}">${v>0?'+':''}${v}%</span>`;
 
   el.innerHTML = `<table>
     <thead><tr>
       <th>Creative</th>
-      <th style="text-align:right">${rA.label} ROAS</th>
-      <th style="text-align:right">${rB.label} ROAS</th>
-      <th style="text-align:right">${rA.label} CTR%</th>
-      <th style="text-align:right">${rB.label} CTR%</th>
-      <th style="text-align:right">${rA.label} Spend</th>
+      <th style="text-align:right">A ROAS</th><th style="text-align:right">B ROAS</th><th style="text-align:right">ROAS Δ</th>
+      <th style="text-align:right">A CTR%</th><th style="text-align:right">B CTR%</th><th style="text-align:right">CTR Δ</th>
+      <th style="text-align:right">A Spend</th><th style="text-align:right">B Spend</th>
       <th>Momentum</th>
     </tr></thead>
     <tbody>${rows.map(r => `<tr>
-      <td style="font-size:12px;font-weight:500;color:var(--text);min-width:140px" title="${r.name}">${r.name.length > 26 ? r.name.slice(0, 26) + '…' : r.name}</td>
-      <td style="text-align:right;font-size:12px;font-family:'Syne',sans-serif;font-weight:600;color:${r.rowA?(r.rowA.roas>=4?'var(--green)':r.rowA.roas>=2?'var(--amber)':'var(--red)'):'var(--text3)'}">${r.rowA ? r.rowA.roas + 'x' : '—'}</td>
-      <td style="text-align:right;font-size:12px;font-family:'Syne',sans-serif;color:var(--text2)">${r.rowB ? r.rowB.roas + 'x' : '—'}</td>
-      <td style="text-align:right;font-size:12px;color:var(--text2)">${r.rowA ? r.rowA.ctr.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:right;font-size:12px;color:var(--text2)">${r.rowB ? r.rowB.ctr.toFixed(2) + '%' : '—'}</td>
-      <td style="text-align:right;font-size:12px;color:var(--text2)">${r.rowA?.spend ? S.currency + fmtNum(r.rowA.spend) : '—'}</td>
-      <td><span class="momentum m-${r.mom}">${r.momLbl}</span></td>
+      <td style="font-weight:500;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.name}">${r.name.length>26?r.name.slice(0,26)+'…':r.name}</td>
+      <td style="text-align:right;font-weight:600;color:${r.a?(r.a.roas>=4?'var(--green)':r.a.roas>=2?'var(--amber)':'var(--red)'):'var(--text3)'}">${r.a?r.a.roas.toFixed(2)+'x':'—'}</td>
+      <td style="text-align:right;color:var(--text3)">${r.b?r.b.roas.toFixed(2)+'x':'—'}</td>
+      <td style="text-align:right">${dBadge(r.rDelta)}</td>
+      <td style="text-align:right;color:var(--text2)">${r.a?r.a.ctr.toFixed(2)+'%':'—'}</td>
+      <td style="text-align:right;color:var(--text3)">${r.b?r.b.ctr.toFixed(2)+'%':'—'}</td>
+      <td style="text-align:right">${dBadge(r.cDelta)}</td>
+      <td style="text-align:right;color:var(--text2)">${r.a?.spend?S.currency+fmtNum(r.a.spend):'—'}</td>
+      <td style="text-align:right;color:var(--text3)">${r.b?.spend?S.currency+fmtNum(r.b.spend):'—'}</td>
+      <td><span class="momentum m-${r.momCls}">${r.momLbl}</span></td>
     </tr>`).join('')}</tbody></table>`;
 }
+
+function renderDayOfWeekChart(allRows, from, to) {
+  const rows = filterRowsByRange(allRows, from, to);
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const byDow = Array.from({length:7}, () => ({roasSum:0,roasW:0,spend:0,n:0}));
+  const byDate = {};
+  rows.forEach(r => { if(r.rowDate){ (byDate[r.rowDate]=byDate[r.rowDate]||[]).push(r); } });
+  Object.entries(byDate).forEach(([d, rs]) => {
+    const dow = new Date(d).getDay();
+    const spend = sum(rs,'spend');
+    const roas  = wavg(rs,'roas','spend');
+    byDow[dow].spend += spend;
+    byDow[dow].roasSum += roas * spend;
+    byDow[dow].roasW   += spend;
+    byDow[dow].n++;
+  });
+  const labels = DAY_NAMES;
+  const roasData  = byDow.map(b => b.roasW > 0 ? +(b.roasSum/b.roasW).toFixed(2) : null);
+  const spendData = byDow.map(b => b.n > 0 ? +(b.spend/b.n).toFixed(0) : null);
+
+  mkChart('dowChart', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Avg ROAS', data:roasData, backgroundColor:'rgba(79,110,247,0.55)', borderRadius:4, yAxisID:'y' },
+        { label:'Avg Daily Spend', data:spendData, type:'line', borderColor:'#22c993',
+          backgroundColor:'transparent', borderWidth:2, tension:0.3, pointRadius:3,
+          pointBackgroundColor:'#22c993', yAxisID:'y1', spanGaps:true }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#8b90a8', font:{size:10}, boxWidth:9, padding:6 } } },
+      scales:{
+        x: xA(),
+        y:  { ...yA(), position:'left',  title:{ display:true, text:'ROAS', color:'#555a72', font:{size:9} } },
+        y1: { ...yA(), position:'right', grid:{drawOnChartArea:false},
+              title:{ display:true, text:'Spend', color:'#555a72', font:{size:9} } }
+      }
+    }
+  });
+}
+
+function renderRollingChart(allRows, from, to) {
+  const rows = filterRowsByRange(allRows, from, to);
+  const byDate = {};
+  rows.forEach(r => { if(r.rowDate){ (byDate[r.rowDate]=byDate[r.rowDate]||[]).push(r); } });
+  const dates = Object.keys(byDate).sort();
+  if (dates.length < 2) { mkChart('rollingChart',null); return; }
+
+  const dailyRoas = dates.map(d => ({ d, roas: wavg(byDate[d],'roas','spend') }));
+  const rolling = dailyRoas.map((pt, i) => {
+    const window = dailyRoas.slice(Math.max(0, i-6), i+1);
+    const totalSpend = window.reduce((s,p) => s + sum(byDate[p.d],'spend'), 0);
+    const weighted = window.reduce((s,p) => s + wavg(byDate[p.d],'roas','spend') * sum(byDate[p.d],'spend'), 0);
+    return totalSpend > 0 ? +(weighted/totalSpend).toFixed(2) : null;
+  });
+
+  mkChart('rollingChart', {
+    type: 'line',
+    data: {
+      labels: dates.map(d => fmtDate(d)),
+      datasets: [
+        { label:'7-day rolling ROAS', data:rolling,
+          borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,0.1)',
+          borderWidth:2, tension:0.4, pointRadius:2, fill:true, spanGaps:true }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#8b90a8', font:{size:10}, boxWidth:9, padding:6 } } },
+      scales:{ x: xA(), y: yA() } }
+  });
+}
+
+// Legacy stubs — kept for compatibility
+function renderTrendsChart() { renderTrends(); }
+function renderMomentumTable() {}
 
 // ═══════════════════════════════════════════════════
 // INSIGHTS + AI ENGINE
