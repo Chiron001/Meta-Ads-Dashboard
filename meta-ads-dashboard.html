@@ -297,6 +297,14 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .notes-input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text2);font-family:'DM Sans',sans-serif;outline:none;width:140px;}
 .notes-input:focus{border-color:var(--accent);}
 .lib-action-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+
+/* Date filter bar */
+.date-filter-bar{display:flex;align-items:center;gap:10px;padding:9px 28px;border-bottom:1px solid var(--border);background:var(--bg2);flex-wrap:wrap;}
+.date-input{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:5px 9px;font-size:11px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;width:128px;color-scheme:dark;}
+.date-input:focus{border-color:var(--accent);}
+.date-preset{font-size:10px;padding:3px 9px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.date-preset:hover,.date-preset.dp-active{background:rgba(79,110,247,0.15);border-color:var(--accent);color:var(--accent);}
+@media(max-width:900px){.date-filter-bar{padding:8px 14px;}}
 </style>
 </head>
 <body>
@@ -334,6 +342,21 @@ textarea.form-input{resize:vertical;min-height:80px;}
       <div id="report-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
       <button class="btn btn-primary btn-sm" onclick="exportReport()">Export ↓</button>
     </div>
+  </div>
+
+  <!-- DATE FILTER BAR -->
+  <div id="date-filter-bar" class="date-filter-bar" style="display:none">
+    <span style="font-size:10px;font-weight:500;color:var(--text2);white-space:nowrap">Date filter</span>
+    <input type="date" id="date-from" class="date-input" onchange="applyDateFilter()" title="From date">
+    <span style="font-size:11px;color:var(--text3)">→</span>
+    <input type="date" id="date-to" class="date-input" onchange="applyDateFilter()" title="To date">
+    <div style="display:flex;gap:4px">
+      <button class="date-preset" id="dp-7"  onclick="setDatePreset(7)">7d</button>
+      <button class="date-preset" id="dp-14" onclick="setDatePreset(14)">14d</button>
+      <button class="date-preset" id="dp-30" onclick="setDatePreset(30)">30d</button>
+      <button class="date-preset" id="dp-all" onclick="clearDateFilter()">All</button>
+    </div>
+    <span id="date-filter-info" style="font-size:10px;color:var(--text3);flex:1"></span>
   </div>
 
   <!-- UPLOAD -->
@@ -766,6 +789,7 @@ const COL = {
   status:       ['delivery status','status','state','ad status'],
   report_start: ['reporting starts','date start','start date'],
   report_end:   ['reporting ends','date end','end date'],
+  row_date:     ['day','date'],
 };
 
 // ═══════════════════════════════════════════════════
@@ -785,6 +809,8 @@ const S = {
   campTab: 'campaigns',
   pending: { rows: [], mediaFiles: [], excelFile: null, dateStart: '', dateEnd: '' },
   settings: {},
+  dateFilter: { from: '', to: '' },
+  _lastRenderedRows: [],
 };
 
 function activeRows() {
@@ -993,12 +1019,13 @@ function normaliseRows(rows) {
                         : statusRaw.includes('pause')  ? 'paused' : 'active';
       const tier        = roas >= 4 ? 'top' : roas >= 2 ? 'mid' : 'low';
       const media       = findMedia(normFile(adName));
+      const rowDate     = ns(row, map, 'row_date', '');
       return {
         adName, campaignName, adsetName,
         impressions, reach, frequency, spend, linkClicks,
         ctr, cpm, cpc, video3s, thruplay, hookRate, holdRate,
         purchases, addsToCart, revenue, cpa, roas,
-        format, status, tier,
+        format, status, tier, rowDate,
         url: media?.url || null, mediaType: media?.type || null,
       };
     });
@@ -1165,6 +1192,7 @@ function goPage(name) {
   document.getElementById('page-title').innerHTML = `${m[0]} <span id="page-sub">${m[1]}</span>`;
   const showActions = name !== 'upload' && name !== 'settings' && name !== 'knowledge' && name !== 'library';
   document.getElementById('topbar-actions').style.display = showActions ? 'flex' : 'none';
+  updateDateFilterBar(name);
   syncReportPills();
   if (name === 'library')   renderLibrary();
   if (name === 'reports')   renderReports();
@@ -1195,11 +1223,15 @@ function syncReportPills() {
 
 function setActiveReport(id, el) {
   S.activeReportId = id;
+  S.dateFilter = { from: '', to: '' };
+  const f = document.getElementById('date-from'); if (f) f.value = '';
+  const t = document.getElementById('date-to');   if (t) t.value = '';
   document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
   el?.classList.add('active');
   const active = document.querySelector('.page.active');
   if (!active) return;
   const pg = active.id.replace('page-', '');
+  updateDateFilterBar(pg);
   if (pg === 'dashboard') renderDashboard();
   if (pg === 'creatives') renderCreatives();
   if (pg === 'compare')   renderCompare();
@@ -1321,7 +1353,8 @@ function mkChart(id, cfg) {
 // DASHBOARD
 // ═══════════════════════════════════════════════════
 function renderDashboard() {
-  const data = activeRows();
+  const data = filteredRows();
+  S._lastRenderedRows = data;
   if (!data.length) {
     document.getElementById('kpi-row').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📊</div><h3>No data loaded</h3><p>Select a report from the top bar.</p></div>`;
     return;
@@ -1380,7 +1413,7 @@ function renderTrendChart() {
   if (!loaded.length) return;
   const labels = [...loaded].reverse().map(r => r.label.length > 14 ? r.label.slice(0, 14) + '…' : r.label);
   // Top 5 ads from active report
-  const activeData = activeRows();
+  const activeData = filteredRows();
   const top5 = [...activeData].sort((a, b) => b.roas - a.roas).slice(0, 5);
 
   const datasets = top5.map((c, i) => ({
@@ -1496,7 +1529,8 @@ function setCampTab(tab) {
 }
 
 function renderCampaigns() {
-  const data = activeRows();
+  const data = filteredRows();
+  S._lastRenderedRows = data;
   const el = document.getElementById('campaigns-tree');
   if (!data.length) {
     el.innerHTML = `<div class="empty"><div class="empty-icon">🏢</div><h3>No data</h3><p>Select a report first.</p></div>`;
@@ -1686,7 +1720,8 @@ function toggleNode(id, hdrEl) {
 // CREATIVES
 // ═══════════════════════════════════════════════════
 function renderCreatives() {
-  const data = activeRows();
+  const data = filteredRows();
+  S._lastRenderedRows = data;
   const filtersEl = document.getElementById('creative-filters');
   const el = document.getElementById('creative-grid');
   if (!data.length) {
@@ -1733,7 +1768,8 @@ function setCF(key, val) { S.creativeFilter[key] = val; renderCreatives(); }
 // ═══════════════════════════════════════════════════
 function renderCompare() {
   const el = document.getElementById('compare-table');
-  const data = activeRows();
+  const data = filteredRows();
+  S._lastRenderedRows = data;
   if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><h3>No data</h3></div>`; return; }
   const metric = document.getElementById('sort-metric')?.value || 'roas';
   const sorted = [...data].sort((a, b) => b[metric] - a[metric]);
@@ -1887,7 +1923,7 @@ function renderInsights() {
   }
   const reportId = parseInt(selEl?.value) || S.activeReportId;
   const report = S.reports.find(r => r.id === reportId);
-  const data = report?.rows || [];
+  const data = filteredRows(report?.rows);
   if (!data.length) {
     document.getElementById('insights-list').innerHTML = `<div class="empty"><div class="empty-icon">◈</div><h3>Select a report</h3></div>`;
     document.getElementById('gap-list').innerHTML = '';
@@ -2299,7 +2335,7 @@ async function handleImport(files) {
 // LIGHTBOX
 // ═══════════════════════════════════════════════════
 function openLightboxRow(i) {
-  const c = activeRows()[i];
+  const c = (S._lastRenderedRows.length ? S._lastRenderedRows : activeRows())[i];
   if (!c) return;
   const media = c.url
     ? (c.mediaType === 'video' ? `<video src="${c.url}" class="lb-media" controls style="max-height:220px"></video>` : `<img src="${c.url}" class="lb-media" style="max-height:220px">`)
@@ -2392,6 +2428,167 @@ function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════
+// DATE FILTER
+// ═══════════════════════════════════════════════════
+function filteredRows(rows) {
+  const data = rows !== undefined ? (rows || []) : activeRows();
+  const { from, to } = S.dateFilter;
+  if (!from && !to) return data;
+
+  const hasDateCol = data.some(r => r.rowDate);
+  if (!hasDateCol) return data;
+
+  const fromDate = from ? new Date(from) : null;
+  const toDate   = to   ? new Date(to)   : null;
+
+  const filtered = data.filter(r => {
+    if (!r.rowDate) return true;
+    const d = new Date(r.rowDate);
+    if (fromDate && d < fromDate) return false;
+    if (toDate   && d > toDate)   return false;
+    return true;
+  });
+  return aggregateByAd(filtered);
+}
+
+function aggregateByAd(rows) {
+  if (!rows.length) return [];
+  const byKey = new Map();
+
+  rows.forEach(row => {
+    const key = `${row.adName}||${row.campaignName}||${row.adsetName}`;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        ...row,
+        impressions: 0, reach: 0, spend: 0, linkClicks: 0,
+        video3s: 0, thruplay: 0, purchases: 0, addsToCart: 0, revenue: 0,
+        _rwSum: 0, _rw: 0,
+      });
+    }
+    const a = byKey.get(key);
+    a.impressions += row.impressions || 0;
+    a.reach       += row.reach       || 0;
+    a.spend       += row.spend       || 0;
+    a.linkClicks  += row.linkClicks  || 0;
+    a.video3s     += row.video3s     || 0;
+    a.thruplay    += row.thruplay    || 0;
+    a.purchases   += row.purchases   || 0;
+    a.addsToCart  += row.addsToCart  || 0;
+    a.revenue     += row.revenue     || 0;
+    if (row.roas && row.spend) { a._rwSum += row.roas * row.spend; a._rw += row.spend; }
+  });
+
+  return [...byKey.values()].map(a => {
+    a.ctr      = a.impressions > 0 ? +((a.linkClicks / a.impressions) * 100).toFixed(2) : 0;
+    a.cpm      = a.impressions > 0 ? +((a.spend / a.impressions) * 1000).toFixed(2)     : 0;
+    a.cpc      = a.linkClicks  > 0 ? +(a.spend / a.linkClicks).toFixed(2)               : 0;
+    a.hookRate = a.impressions > 0 && a.video3s > 0  ? +((a.video3s  / a.impressions) * 100).toFixed(1) : null;
+    a.holdRate = a.video3s     > 0 && a.thruplay > 0 ? +((a.thruplay / a.video3s)     * 100).toFixed(1) : null;
+    a.cpa      = a.purchases > 0 && a.spend > 0 ? +(a.spend / a.purchases).toFixed(2) : 0;
+    a.roas     = a.revenue > 0 && a.spend > 0
+      ? +(a.revenue / a.spend).toFixed(2)
+      : (a._rw > 0 ? +(a._rwSum / a._rw).toFixed(2) : 0);
+    a.frequency = a.reach > 0 ? +(a.impressions / a.reach).toFixed(2) : 0;
+    a.tier      = a.roas >= 4 ? 'top' : a.roas >= 2 ? 'mid' : 'low';
+    delete a._rwSum; delete a._rw;
+    return a;
+  });
+}
+
+function applyDateFilter() {
+  S.dateFilter.from = document.getElementById('date-from')?.value || '';
+  S.dateFilter.to   = document.getElementById('date-to')?.value   || '';
+  updateDateFilterInfo();
+  rerenderActivePage();
+}
+
+function clearDateFilter() {
+  S.dateFilter = { from: '', to: '' };
+  const f = document.getElementById('date-from'); if (f) f.value = '';
+  const t = document.getElementById('date-to');   if (t) t.value = '';
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('dp-active'));
+  document.getElementById('dp-all')?.classList.add('dp-active');
+  updateDateFilterInfo();
+  rerenderActivePage();
+}
+
+function setDatePreset(days) {
+  const rows = activeRows();
+  const hasDateCol = rows.some(r => r.rowDate);
+  let toDate, fromDate;
+  if (hasDateCol) {
+    const sorted = rows.map(r => r.rowDate).filter(Boolean).map(d => new Date(d)).sort((a, b) => b - a);
+    toDate = sorted[0] || new Date();
+  } else {
+    toDate = new Date();
+  }
+  fromDate = new Date(toDate);
+  fromDate.setDate(fromDate.getDate() - (days - 1));
+
+  const fmt = d => d.toISOString().slice(0, 10);
+  const f = document.getElementById('date-from'); if (f) f.value = fmt(fromDate);
+  const t = document.getElementById('date-to');   if (t) t.value = fmt(toDate);
+
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('dp-active'));
+  document.getElementById('dp-' + days)?.classList.add('dp-active');
+  applyDateFilter();
+}
+
+function updateDateFilterInfo() {
+  const el = document.getElementById('date-filter-info');
+  if (!el) return;
+  const rows = activeRows();
+  const hasDateCol = rows.some(r => r.rowDate);
+
+  if (!hasDateCol && rows.length) {
+    el.textContent = 'No "Day" column found — export with Day breakdown from Meta Ads Manager for per-date filtering';
+    el.style.color = 'var(--amber)';
+    return;
+  }
+  el.style.color = 'var(--text3)';
+
+  const { from, to } = S.dateFilter;
+  if (!from && !to) {
+    const dates = rows.map(r => r.rowDate).filter(Boolean).sort();
+    const unique = [...new Set(dates)];
+    el.textContent = unique.length
+      ? `${unique.length} day${unique.length !== 1 ? 's' : ''} available: ${fmtDate(unique[0])} → ${fmtDate(unique[unique.length - 1])}`
+      : '';
+    document.getElementById('dp-all')?.classList.add('dp-active');
+    return;
+  }
+
+  const filtered = filteredRows();
+  const unique = [...new Set(rows.filter(r => {
+    if (!r.rowDate) return false;
+    const d = new Date(r.rowDate);
+    if (from && d < new Date(from)) return false;
+    if (to   && d > new Date(to))   return false;
+    return true;
+  }).map(r => r.rowDate))];
+  el.textContent = `${filtered.length} ad${filtered.length !== 1 ? 's' : ''} · ${unique.length} day${unique.length !== 1 ? 's' : ''} in range`;
+}
+
+function updateDateFilterBar(pageName) {
+  const bar = document.getElementById('date-filter-bar');
+  if (!bar) return;
+  const showOn = ['dashboard', 'campaigns', 'creatives', 'compare', 'insights'];
+  bar.style.display = showOn.includes(pageName) ? 'flex' : 'none';
+  if (showOn.includes(pageName)) updateDateFilterInfo();
+}
+
+function rerenderActivePage() {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const pg = active.id.replace('page-', '');
+  if (pg === 'dashboard') renderDashboard();
+  if (pg === 'campaigns') renderCampaigns();
+  if (pg === 'creatives') renderCreatives();
+  if (pg === 'compare')   renderCompare();
+  if (pg === 'insights')  renderInsights();
 }
 
 // ═══════════════════════════════════════════════════
