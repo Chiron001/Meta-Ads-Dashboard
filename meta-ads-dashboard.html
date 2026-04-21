@@ -584,14 +584,19 @@ textarea.form-input{resize:vertical;min-height:80px;}
   <!-- COMPARE -->
   <div id="page-compare" class="page">
     <div class="panel">
-      <div class="section-hdr">
+      <div class="section-hdr" style="flex-wrap:wrap;gap:10px">
         <h2 id="compare-mode-title">All creatives — sortable</h2>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="sort-metric" onchange="renderCompare()">
-            <option value="roas">ROAS</option><option value="ctr">CTR</option>
-            <option value="hookRate">Hook Rate</option><option value="holdRate">Hold Rate</option>
-            <option value="cpa">CPA</option><option value="spend">Spend</option>
-            <option value="impressions">Impressions</option><option value="frequency">Frequency</option>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="compare-search" class="form-input" style="width:190px;padding:5px 10px;font-size:11px" placeholder="Search ad / campaign…" oninput="renderCompare()">
+          <select id="compare-sort" onchange="renderCompare()" style="font-size:11px;padding:5px 9px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif">
+            <option value="roas">Sort: ROAS</option>
+            <option value="spend">Sort: Spend</option>
+            <option value="purchases">Sort: Purchases</option>
+            <option value="ctr">Sort: CTR%</option>
+            <option value="cpa">Sort: CPA</option>
+            <option value="impressions">Sort: Impressions</option>
+            <option value="hookRate">Sort: Hook%</option>
+            <option value="frequency">Sort: Frequency</option>
           </select>
         </div>
       </div>
@@ -1743,14 +1748,38 @@ function buildTree(data) {
 }
 
 function aggKPIs(rows) {
+  if (!rows.length) return { spend:0,roas:0,ctr:0,purchases:0,impressions:0,reach:0,revenue:0,addsToCart:0,cpa:0,cpm:0,cpc:0,frequency:0,hookRate:null,holdRate:null };
+  const spend       = sum(rows, 'spend');
+  const impressions = sum(rows, 'impressions');
+  const reach       = sum(rows, 'reach');
+  const revenue     = sum(rows, 'revenue');
+  const purchases   = sum(rows, 'purchases');
+  const addsToCart  = sum(rows, 'addsToCart');
+  const linkClicks  = sum(rows, 'linkClicks');
+  const video3s     = sum(rows, 'video3s');
+  const thruplay    = sum(rows, 'thruplay');
+  const roasNum = rows.reduce((s,r) => s + ((r.roas&&r.spend) ? r.roas*r.spend : 0), 0);
+  const roasDen = rows.reduce((s,r) => s + ((r.roas&&r.spend) ? r.spend : 0), 0);
   return {
-    spend: sum(rows, 'spend'),
-    roas: wavg(rows, 'roas', 'spend'),
-    ctr: wavg(rows, 'ctr', 'impressions'),
-    purchases: sum(rows, 'purchases'),
-    impressions: sum(rows, 'impressions'),
-    cpa: rows.filter(r => r.cpa > 0).length ? avg(rows.filter(r => r.cpa > 0), 'cpa') : 0,
+    spend, impressions, reach, revenue, purchases, addsToCart, linkClicks,
+    roas:      roasDen>0 ? +(roasNum/roasDen).toFixed(2) : (revenue>0&&spend>0 ? +(revenue/spend).toFixed(2) : 0),
+    ctr:       impressions>0&&linkClicks>0 ? +((linkClicks/impressions)*100).toFixed(2) : +wavg(rows,'ctr','impressions').toFixed(2),
+    cpm:       impressions>0 ? +((spend/impressions)*1000).toFixed(2) : 0,
+    cpc:       linkClicks>0  ? +(spend/linkClicks).toFixed(2) : 0,
+    cpa:       purchases>0   ? +(spend/purchases).toFixed(2) : 0,
+    frequency: reach>0       ? +(impressions/reach).toFixed(2) : 0,
+    hookRate:  impressions>0&&video3s>0  ? +((video3s/impressions)*100).toFixed(1) : null,
+    holdRate:  video3s>0&&thruplay>0     ? +((thruplay/video3s)*100).toFixed(1)    : null,
   };
+}
+
+// Inline delta badge for campaign/adset headers
+function cmpDeltaBadge(mVal, cVal, invert=false) {
+  if (!mVal || !cVal) return '';
+  const d = (mVal - cVal) / Math.abs(cVal) * 100;
+  const eff = invert ? -d : d;
+  const clr = eff > 0 ? 'var(--green)' : eff < 0 ? 'var(--red)' : 'var(--text3)';
+  return `<span style="font-size:9px;font-weight:700;color:${clr};margin-left:3px">${d>=0?'+':''}${d.toFixed(1)}%</span>`;
 }
 
 function setCampTab(tab) {
@@ -1780,7 +1809,10 @@ function renderCampaigns() {
 function renderCampaignsView(data, el) {
   const search  = document.getElementById('camp-search')?.value?.toLowerCase() || '';
   const sortKey = document.getElementById('camp-sort')?.value || 'spend';
-  const tree    = buildTree(data);
+  const comp    = resolveComparisonPeriod();
+  const compTree = comp ? buildTree(comp.rows) : null;
+  const compMap  = comp ? new Map(comp.rows.map(r => [r.adName, r])) : null;
+  const tree     = buildTree(data);
 
   const camps = Object.values(tree)
     .filter(c => !search || c.name.toLowerCase().includes(search) || Object.keys(c.adsets).some(a => a.toLowerCase().includes(search)))
@@ -1788,11 +1820,13 @@ function renderCampaignsView(data, el) {
 
   if (!camps.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><h3>No results</h3></div>`; return; }
 
-  const adTh = `style="padding:6px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border)"`;
+  const adTh  = `style="padding:6px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border)"`;
   const numTh = `style="padding:6px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border)"`;
 
   el.innerHTML = camps.map((camp, ci) => {
-    const ck = aggKPIs(camp.rows);
+    const ck   = aggKPIs(camp.rows);
+    const compCampRows = compTree?.[camp.name]?.rows || [];
+    const cck  = compCampRows.length ? aggKPIs(compCampRows) : null;
     const adsets = Object.values(camp.adsets).sort((a, b) => aggKPIs(b.rows)[sortKey] - aggKPIs(a.rows)[sortKey]);
     return `
     <div class="camp-node">
@@ -1800,16 +1834,19 @@ function renderCampaignsView(data, el) {
         <span class="camp-toggle">▶</span>
         <span class="camp-name">${camp.name}</span>
         <span class="camp-meta">
-          <span style="color:${ck.roas>=4?'var(--green)':ck.roas>=2?'var(--amber)':'var(--red)'}">${ck.roas.toFixed(2)}x ROAS</span>
-          <span>${S.currency}${fmtNum(ck.spend)} spend</span>
+          <span style="color:${ck.roas>=4?'var(--green)':ck.roas>=2?'var(--amber)':'var(--red)'}">${ck.roas.toFixed(2)}x ROAS${cck?cmpDeltaBadge(ck.roas,cck.roas):''}</span>
+          <span>${S.currency}${fmtNum(ck.spend)} spend${cck?cmpDeltaBadge(ck.spend,cck.spend):''}</span>
           <span>${fmtNum(ck.impressions)} impr</span>
-          <span>${ck.purchases} purchases</span>
+          <span>${ck.purchases} purchases${cck&&cck.purchases?cmpDeltaBadge(ck.purchases,cck.purchases):''}</span>
           <span>${adsets.length} ad set${adsets.length!==1?'s':''}</span>
+          ${cck?`<span style="font-size:9px;color:var(--text3)">vs comp: ${S.currency}${fmtNum(cck.spend)} · ${cck.roas.toFixed(2)}x</span>`:''}
         </span>
       </div>
       <div class="camp-body" id="camp-body-${ci}">
         ${adsets.map((aset, ai) => {
-          const ak = aggKPIs(aset.rows);
+          const ak  = aggKPIs(aset.rows);
+          const compAsetRows = compTree?.[camp.name]?.adsets?.[aset.name]?.rows || [];
+          const cak = compAsetRows.length ? aggKPIs(compAsetRows) : null;
           const adKey = `adset-body-${ci}-${ai}`;
           return `
           <div class="adset-node">
@@ -1817,21 +1854,25 @@ function renderCampaignsView(data, el) {
               <span class="camp-toggle" style="font-size:10px">▶</span>
               <span class="adset-name">${aset.name}</span>
               <span class="camp-meta" style="font-size:10px">
-                <span style="color:${ak.roas>=4?'var(--green)':ak.roas>=2?'var(--amber)':'var(--red)'}">${ak.roas.toFixed(2)}x</span>
-                <span>${S.currency}${fmtNum(ak.spend)}</span>
-                <span>${ak.purchases} purch.</span>
-                <span>${ak.ctr.toFixed(2)}% CTR</span>
+                <span style="color:${ak.roas>=4?'var(--green)':ak.roas>=2?'var(--amber)':'var(--red)'}">${ak.roas.toFixed(2)}x${cak?cmpDeltaBadge(ak.roas,cak.roas):''}</span>
+                <span>${S.currency}${fmtNum(ak.spend)}${cak?cmpDeltaBadge(ak.spend,cak.spend):''}</span>
+                <span>${ak.purchases} purch.${cak&&cak.purchases?cmpDeltaBadge(ak.purchases,cak.purchases):''}</span>
+                <span>${ak.ctr.toFixed(2)}% CTR${cak?cmpDeltaBadge(ak.ctr,cak.ctr):''}</span>
                 <span>${aset.rows.length} ad${aset.rows.length!==1?'s':''}</span>
               </span>
             </div>
             <div class="adset-body" id="${adKey}">
               <table style="width:100%;font-size:11px;border-collapse:collapse">
                 <thead><tr>
-                  <th ${adTh}>Ad</th><th ${numTh}>ROAS</th><th ${numTh}>CTR%</th>
-                  <th ${numTh}>Spend</th><th ${numTh}>Purch.</th><th ${numTh}>CPA</th>
+                  <th ${adTh}>Ad</th>
+                  <th ${numTh}>ROAS${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+                  <th ${numTh}>CTR%${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+                  <th ${numTh}>Spend${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+                  <th ${numTh}>Conv.${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+                  <th ${numTh}>CPA${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
                   <th ${numTh}>Freq.</th><th ${numTh}>Status</th>
                 </tr></thead>
-                <tbody>${aset.rows.map(row => campAdRow(row, data)).join('')}</tbody>
+                <tbody>${aset.rows.map(row => campAdRow(row, data, compMap?.get(row.adName))).join('')}</tbody>
               </table>
             </div>
           </div>`;
@@ -1845,12 +1886,16 @@ function renderCampaignsView(data, el) {
 function renderAdSetsView(data, el) {
   const search  = document.getElementById('camp-search')?.value?.toLowerCase() || '';
   const sortKey = document.getElementById('camp-sort')?.value || 'spend';
-  const tree    = buildTree(data);
+  const comp    = resolveComparisonPeriod();
+  const compTree = comp ? buildTree(comp.rows) : null;
+  const compMap  = comp ? new Map(comp.rows.map(r => [r.adName, r])) : null;
+  const tree     = buildTree(data);
 
   const adsets = [];
   Object.values(tree).forEach(camp =>
     Object.values(camp.adsets).forEach(aset =>
-      adsets.push({ name: aset.name, campaignName: camp.name, rows: aset.rows, kpis: aggKPIs(aset.rows) })
+      adsets.push({ name: aset.name, campaignName: camp.name, rows: aset.rows, kpis: aggKPIs(aset.rows),
+        compRows: compTree?.[camp.name]?.adsets?.[aset.name]?.rows || [] })
     )
   );
 
@@ -1863,7 +1908,9 @@ function renderAdSetsView(data, el) {
   const adTh  = `style="padding:6px 10px;text-align:left;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border)"`;
   const numTh = `style="padding:6px 10px;text-align:right;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border)"`;
 
-  el.innerHTML = filtered.map((a, ai) => `
+  el.innerHTML = filtered.map((a, ai) => {
+    const cak = a.compRows.length ? aggKPIs(a.compRows) : null;
+    return `
     <div class="camp-node">
       <div class="camp-hdr" onclick="toggleNode('aset-flat-${ai}',this)">
         <span class="camp-toggle">▶</span>
@@ -1872,30 +1919,37 @@ function renderAdSetsView(data, el) {
           <div style="font-size:10px;color:var(--text3);margin-top:1px">${a.campaignName}</div>
         </div>
         <span class="camp-meta">
-          <span style="color:${a.kpis.roas>=4?'var(--green)':a.kpis.roas>=2?'var(--amber)':'var(--red)'}">${a.kpis.roas.toFixed(2)}x ROAS</span>
-          <span>${S.currency}${fmtNum(a.kpis.spend)}</span>
-          <span>${a.kpis.purchases} purch.</span>
-          <span>${a.kpis.ctr.toFixed(2)}% CTR</span>
+          <span style="color:${a.kpis.roas>=4?'var(--green)':a.kpis.roas>=2?'var(--amber)':'var(--red)'}">${a.kpis.roas.toFixed(2)}x ROAS${cak?cmpDeltaBadge(a.kpis.roas,cak.roas):''}</span>
+          <span>${S.currency}${fmtNum(a.kpis.spend)}${cak?cmpDeltaBadge(a.kpis.spend,cak.spend):''}</span>
+          <span>${a.kpis.purchases} purch.${cak&&cak.purchases?cmpDeltaBadge(a.kpis.purchases,cak.purchases):''}</span>
+          <span>${a.kpis.ctr.toFixed(2)}% CTR${cak?cmpDeltaBadge(a.kpis.ctr,cak.ctr):''}</span>
           <span>${a.rows.length} ad${a.rows.length!==1?'s':''}</span>
         </span>
       </div>
       <div class="camp-body" id="aset-flat-${ai}">
         <table style="width:100%;font-size:11px;border-collapse:collapse">
           <thead><tr>
-            <th ${adTh}>Ad</th><th ${numTh}>ROAS</th><th ${numTh}>CTR%</th>
-            <th ${numTh}>Spend</th><th ${numTh}>Purch.</th><th ${numTh}>CPA</th>
+            <th ${adTh}>Ad</th>
+            <th ${numTh}>ROAS${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+            <th ${numTh}>CTR%${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+            <th ${numTh}>Spend${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+            <th ${numTh}>Conv.${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
+            <th ${numTh}>CPA${comp?'<br><span style="font-size:8px;font-weight:400">main/comp/Δ</span>':''}</th>
             <th ${numTh}>Freq.</th><th ${numTh}>Status</th>
           </tr></thead>
-          <tbody>${a.rows.map(row => campAdRow(row, data)).join('')}</tbody>
+          <tbody>${a.rows.map(row => campAdRow(row, data, compMap?.get(row.adName))).join('')}</tbody>
         </table>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── Tab: Ads ──────────────────────────────────────────
 function renderAdsView(data, el) {
   const search  = document.getElementById('camp-search')?.value?.toLowerCase() || '';
   const sortKey = document.getElementById('camp-sort')?.value || 'spend';
+  const comp    = resolveComparisonPeriod();
+  const compMap = comp ? new Map(comp.rows.map(r => [r.adName, r])) : null;
 
   const rows = [...data]
     .filter(r => !search || r.adName.toLowerCase().includes(search) || r.campaignName.toLowerCase().includes(search) || r.adsetName.toLowerCase().includes(search))
@@ -1903,41 +1957,76 @@ function renderAdsView(data, el) {
 
   if (!rows.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><h3>No results</h3></div>`; return; }
 
+  const sub = t => `<br><span style="font-size:8px;font-weight:400;color:var(--text3)">${t}</span>`;
+
   el.innerHTML = `<div class="panel"><div class="table-wrap"><table>
     <thead><tr>
       <th>Ad</th><th>Campaign</th><th>Ad Set</th>
-      <th>ROAS</th><th>CTR%</th><th>Spend</th><th>Purchases</th><th>CPA</th><th>Freq.</th><th>Status</th>
+      <th>ROAS${comp?sub('main/comp/Δ'):''}</th>
+      <th>CTR%${comp?sub('main/comp/Δ'):''}</th>
+      <th>Spend${comp?sub('main/comp/Δ'):''}</th>
+      <th>Conv.${comp?sub('main/comp/Δ'):''}</th>
+      <th>CPA${comp?sub('main/comp/Δ'):''}</th>
+      <th>Impr.</th><th>CPM</th><th>Freq.</th><th>Status</th>
     </tr></thead>
-    <tbody>${rows.map(c => `
-      <tr style="cursor:pointer" onclick="openLightboxRow(${data.indexOf(c)})">
+    <tbody>${rows.map(c => {
+      const cr = compMap?.get(c.adName) || null;
+      const pd = (f, inv=false) => {
+        if (!cr || !c[f] || !cr[f]) return '';
+        const d = ((c[f]-cr[f])/Math.abs(cr[f])*100);
+        const eff = inv ? -d : d;
+        const clr = eff>0?'var(--green)':eff<0?'var(--red)':'var(--text3)';
+        return `<div style="font-size:9px;font-weight:700;color:${clr}">${d>=0?'+':''}${d.toFixed(1)}%</div>`;
+      };
+      const mkCell = (mainV, compV, dl, color='var(--text2)') =>
+        `<td><div style="font-weight:600;color:${color}">${mainV}</div>${cr?`<div style="font-size:10px;color:var(--text3)">${compV}</div>`:''}${dl}</td>`;
+      const roasMClr = c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)';
+      return `<tr style="cursor:pointer" onclick="openLightboxRow(${data.indexOf(c)})">
         <td><div class="td-name">
-          ${c.url ? (c.mediaType==='video' ? `<video src="${c.url}" class="td-thumb" muted></video>` : `<img src="${c.url}" class="td-thumb" alt="">`) : `<div class="td-thumb" style="display:flex;align-items:center;justify-content:center;font-size:12px">🖼</div>`}
+          ${c.url?(c.mediaType==='video'?`<video src="${c.url}" class="td-thumb" muted></video>`:`<img src="${c.url}" class="td-thumb" alt="">`):`<div class="td-thumb" style="display:flex;align-items:center;justify-content:center;font-size:12px">🖼</div>`}
           <span title="${c.adName}">${c.adName.length>22?c.adName.slice(0,22)+'…':c.adName}</span>
         </div></td>
         <td style="font-size:11px;color:var(--text3);max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.campaignName}">${c.campaignName}</td>
         <td style="font-size:11px;color:var(--text3);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.adsetName}">${c.adsetName}</td>
-        <td style="color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${c.roas ? c.roas.toFixed(2)+'x' : '—'}</td>
-        <td>${c.ctr.toFixed(2)}%</td>
-        <td>${c.spend ? S.currency+fmtNum(c.spend) : '—'}</td>
-        <td>${c.purchases || '—'}</td>
-        <td>${c.cpa ? S.currency+c.cpa.toFixed(0) : '—'}</td>
-        <td style="color:${c.frequency>3?'var(--red)':c.frequency>2?'var(--amber)':'var(--text2)'}">${c.frequency ? c.frequency.toFixed(1)+'x' : '—'}</td>
+        ${mkCell(c.roas?c.roas.toFixed(2)+'x':'—', cr?.roas?cr.roas.toFixed(2)+'x':'—', pd('roas'), roasMClr)}
+        ${mkCell(c.ctr.toFixed(2)+'%', cr?.ctr?cr.ctr.toFixed(2)+'%':'—', pd('ctr'))}
+        ${mkCell(c.spend?S.currency+fmtNum(c.spend):'—', cr?.spend?S.currency+fmtNum(cr.spend):'—', pd('spend'))}
+        ${mkCell(c.purchases||'—', cr?.purchases||'—', pd('purchases'))}
+        ${mkCell(c.cpa?S.currency+c.cpa.toFixed(0):'—', cr?.cpa?S.currency+cr.cpa.toFixed(0):'—', pd('cpa',true))}
+        <td style="color:var(--text2)">${fmtNum(c.impressions)}</td>
+        <td style="color:var(--text2)">${c.cpm?S.currency+c.cpm.toFixed(0):'—'}</td>
+        <td style="color:${c.frequency>3?'var(--red)':c.frequency>2?'var(--amber)':'var(--text2)'}">${c.frequency?c.frequency.toFixed(1)+'x':'—'}</td>
         <td><span class="spill sp-${c.status}">${c.status}</span></td>
-      </tr>`).join('')}
+      </tr>`;
+    }).join('')}
     </tbody>
   </table></div></div>`;
 }
 
-// shared ad row used by both Campaigns and Ad Sets views
-function campAdRow(row, data) {
+// shared ad row used by Campaigns and Ad Sets views
+function campAdRow(row, data, compRow) {
+  const pd = (f, inv=false) => {
+    if (!compRow || !row[f] || !compRow[f]) return '';
+    const d = ((row[f]-compRow[f])/Math.abs(compRow[f])*100);
+    const eff = inv ? -d : d;
+    const clr = eff>0?'var(--green)':eff<0?'var(--red)':'var(--text3)';
+    return `<div style="font-size:9px;font-weight:700;color:${clr}">${d>=0?'+':''}${d.toFixed(1)}%</div>`;
+  };
+  const td = (main, comp, delta, align='right') =>
+    `<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:${align}">
+      <div>${main}</div>
+      ${compRow?`<div style="font-size:10px;color:var(--text3)">${comp}</div>`:''}
+      ${delta}
+    </td>`;
   return `<tr style="cursor:pointer" onclick="openLightboxRow(${data.indexOf(row)})">
     <td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);font-weight:500">${row.adName}</td>
-    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:${row.roas>=4?'var(--green)':row.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${row.roas}x</td>
-    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2)">${row.ctr.toFixed(2)}%</td>
-    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2)">${S.currency}${fmtNum(row.spend)}</td>
-    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2)">${row.purchases || '—'}</td>
-    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text2)">${row.cpa ? S.currency+row.cpa.toFixed(0) : '—'}</td>
-    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:${row.frequency>3?'var(--red)':row.frequency>2?'var(--amber)':'var(--text2)'}">${row.frequency ? row.frequency.toFixed(1)+'x' : '—'}</td>
+    ${td(`<span style="color:${row.roas>=4?'var(--green)':row.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${row.roas}x</span>`,
+         compRow?`${compRow.roas}x`:'—', pd('roas'))}
+    ${td(row.ctr.toFixed(2)+'%', compRow?compRow.ctr.toFixed(2)+'%':'—', pd('ctr'))}
+    ${td(S.currency+fmtNum(row.spend), compRow?S.currency+fmtNum(compRow.spend):'—', pd('spend'))}
+    ${td(row.purchases||'—', compRow?compRow.purchases||'—':'—', pd('purchases'))}
+    ${td(row.cpa?S.currency+row.cpa.toFixed(0):'—', compRow?.cpa?S.currency+compRow.cpa.toFixed(0):'—', pd('cpa',true))}
+    <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;color:${row.frequency>3?'var(--red)':row.frequency>2?'var(--amber)':'var(--text2)'}">${row.frequency?row.frequency.toFixed(1)+'x':'—'}</td>
     <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right"><span class="spill sp-${row.status}">${row.status}</span></td>
   </tr>`;
 }
@@ -2001,142 +2090,258 @@ function setCF(key, val) { S.creativeFilter[key] = val; renderCreatives(); }
 // COMPARE
 // ═══════════════════════════════════════════════════
 function renderCompare() {
-  const el = document.getElementById('compare-table');
-  const hintEl = document.getElementById('compare-mode-hint');
+  const el      = document.getElementById('compare-table');
+  const hintEl  = document.getElementById('compare-mode-hint');
   const titleEl = document.getElementById('compare-mode-title');
-  const sortSel = document.getElementById('sort-metric');
-  const data = filteredRows();
+  const sortSel = document.getElementById('compare-sort');
+  const search  = document.getElementById('compare-search')?.value?.toLowerCase() || '';
+
+  let data = filteredRows();
   S._lastRenderedRows = data;
-  if (!data.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><h3>No data</h3><p>Upload a report first.</p></div>`; return; }
+  if (!data.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><h3>No data</h3><p>Upload a report first.</p></div>`;
+    return;
+  }
+
+  // Apply search
+  if (search) {
+    data = data.filter(r =>
+      r.adName.toLowerCase().includes(search) ||
+      r.campaignName.toLowerCase().includes(search) ||
+      r.adsetName.toLowerCase().includes(search)
+    );
+    if (!data.length) {
+      el.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><h3>No results</h3><p>No ads match "${search}".</p></div>`;
+      return;
+    }
+  }
 
   const comp = resolveComparisonPeriod();
 
   if (comp && comp.rows.length) {
     // ── COMPARISON MODE ──────────────────────────────
     if (titleEl) titleEl.textContent = 'Period comparison';
-    if (sortSel) sortSel.style.display = 'none';
-    const mainFrom = S.dateFilter.from || getDataDateRange(activeRows()).min;
-    const mainTo   = S.dateFilter.to   || getDataDateRange(activeRows()).max;
+
+    // Swap sort options to comparison-mode set
+    if (sortSel) {
+      const cur = sortSel.value;
+      const opts = [
+        ['roas_delta','Sort: ROAS Δ'],['spend_delta','Sort: Spend Δ'],
+        ['ctr_delta','Sort: CTR Δ'],['conv_delta','Sort: Conv. Δ'],
+        ['cpa_delta','Sort: CPA Δ'],['main_roas','Sort: Main ROAS'],
+        ['main_spend','Sort: Main Spend'],
+      ];
+      sortSel.innerHTML = opts.map(([v,l]) => `<option value="${v}"${cur===v?' selected':''}>${l}</option>`).join('');
+    }
+
+    const allRows = activeRows();
+    const dr = getDataDateRange(allRows);
+    const mainFrom = S.dateFilter.from || dr.min;
+    const mainTo   = S.dateFilter.to   || dr.max;
     if (hintEl) hintEl.innerHTML =
       `<span style="color:var(--accent)">▐ Main</span> ${fmtDate(mainFrom)} – ${fmtDate(mainTo)}
-       &nbsp;vs&nbsp; <span style="color:var(--green)">▐ Comp</span> ${comp.label}`;
+       &nbsp;vs&nbsp; <span style="color:var(--green)">▐ Comp</span> ${comp.label}
+       &nbsp;·&nbsp; <span style="color:var(--text3)">Each metric: <strong>Main</strong> / Comp / Δ%</span>`;
 
-    // build map: adName → comp row
     const compMap = new Map(comp.rows.map(r => [r.adName, r]));
     const mainMap = new Map(data.map(r => [r.adName, r]));
-    const allNames = [...new Set([...data.map(r => r.adName), ...comp.rows.map(r => r.adName)])];
+
+    // Include comp-only ads unless search is active
+    const allNames = search
+      ? data.map(r => r.adName)
+      : [...new Set([...data.map(r => r.adName), ...comp.rows.map(r => r.adName)])];
+
+    const pd = (m, c, f) => (m?.[f] && c?.[f]) ? +((m[f]-c[f])/Math.abs(c[f])*100).toFixed(1) : null;
 
     const enriched = allNames.map(name => {
       const m = mainMap.get(name) || null;
       const c = compMap.get(name) || null;
-      const rDelta = (m && c && c.roas)  ? +((m.roas  - c.roas)  / Math.abs(c.roas)  * 100).toFixed(1) : null;
-      const cDelta = (m && c && c.ctr)   ? +((m.ctr   - c.ctr)   / Math.abs(c.ctr)   * 100).toFixed(1) : null;
-      const sDelta = (m && c && c.spend) ? +((m.spend - c.spend) / Math.abs(c.spend) * 100).toFixed(1) : null;
-      const pDelta = (m && c && c.purchases) ? +((m.purchases - c.purchases) / Math.abs(c.purchases) * 100).toFixed(1) : null;
-      const badge  = !m ? 'ended' : !c ? 'new' : null;
-      return { name, m, c, rDelta, cDelta, sDelta, pDelta, badge };
-    }).sort((a, b) => {
-      // sort by ROAS delta desc; NEW first, ENDED last
-      if (a.badge === 'new' && b.badge !== 'new') return -1;
-      if (b.badge === 'new' && a.badge !== 'new') return 1;
-      if (a.badge === 'ended' && b.badge !== 'ended') return 1;
-      if (b.badge === 'ended' && a.badge !== 'ended') return -1;
-      return (b.rDelta || 0) - (a.rDelta || 0);
+      return {
+        name, m, c,
+        badge:     !m ? 'ended' : !c ? 'new' : null,
+        rDelta:    pd(m,c,'roas'),
+        sDelta:    pd(m,c,'spend'),
+        cDelta:    pd(m,c,'ctr'),
+        pDelta:    pd(m,c,'purchases'),
+        cpaDelta:  pd(m,c,'cpa'),
+        cpmDelta:  pd(m,c,'cpm'),
+        cpcDelta:  pd(m,c,'cpc'),
+        impDelta:  pd(m,c,'impressions'),
+        reachDelta:pd(m,c,'reach'),
+        revDelta:  pd(m,c,'revenue'),
+        atcDelta:  pd(m,c,'addsToCart'),
+        hookDelta: pd(m,c,'hookRate'),
+        holdDelta: pd(m,c,'holdRate'),
+        freqDelta: pd(m,c,'frequency'),
+      };
     });
 
-    const deltaBadge = (v, suffix='%') => {
-      if (v === null) return '<span style="color:var(--text3)">—</span>';
-      const cls = v > 0 ? 'delta-up' : v < 0 ? 'delta-down' : 'delta-neu';
-      return `<span class="${cls}" style="font-size:11px;font-weight:600">${v > 0 ? '+' : ''}${v}${suffix}</span>`;
+    // Sort
+    const sk = sortSel?.value || 'roas_delta';
+    enriched.sort((a, b) => {
+      if (sk === 'roas_delta')  { if(a.badge==='ended'&&b.badge!=='ended') return 1; if(b.badge==='ended'&&a.badge!=='ended') return -1; return (b.rDelta||0)-(a.rDelta||0); }
+      if (sk === 'spend_delta') return (b.sDelta||0)-(a.sDelta||0);
+      if (sk === 'ctr_delta')   return (b.cDelta||0)-(a.cDelta||0);
+      if (sk === 'conv_delta')  return (b.pDelta||0)-(a.pDelta||0);
+      if (sk === 'cpa_delta')   return (a.cpaDelta||0)-(b.cpaDelta||0); // lower CPA = better
+      if (sk === 'main_roas')   return (b.m?.roas||0)-(a.m?.roas||0);
+      if (sk === 'main_spend')  return (b.m?.spend||0)-(a.m?.spend||0);
+      return 0;
+    });
+
+    const allPool = [...data, ...comp.rows];
+    const hasVideo = allPool.some(r => r.hookRate !== null);
+    const hasAtc   = allPool.some(r => (r.addsToCart||0) > 0);
+    const hasRev   = allPool.some(r => (r.revenue||0)   > 0);
+    const hasReach = allPool.some(r => (r.reach||0)     > 0);
+
+    // Stacked cell: Main (bold) / Comp (gray) / Delta%
+    const cc = (mV, cV, dl, fmt, inv=false) => {
+      const fv = v => {
+        if (v===null||v===undefined||(v===0&&fmt!=='num')) return '—';
+        if (fmt==='roas')  return (+v).toFixed(2)+'x';
+        if (fmt==='pct')   return (+v).toFixed(2)+'%';
+        if (fmt==='pct1')  return (+v).toFixed(1)+'%';
+        if (fmt==='curr')  return S.currency+fmtNum(v);
+        if (fmt==='curr0') return S.currency+(+v).toFixed(0);
+        if (fmt==='num')   return fmtNum(v);
+        if (fmt==='freq')  return (+v).toFixed(1)+'x';
+        return v;
+      };
+      const eff = (dl!==null && inv) ? -dl : dl;
+      const dClr = dl===null?'':eff>0?'var(--green)':eff<0?'var(--red)':'var(--text3)';
+      const dTxt = dl===null?'':`${dl>0?'+':''}${dl}%`;
+      return `<td style="white-space:nowrap;vertical-align:top;padding:7px 10px">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${fv(mV)}</div>
+        <div style="font-size:10px;color:var(--text3)">${fv(cV)}</div>
+        ${dl!==null?`<div style="font-size:10px;font-weight:700;color:${dClr}">${dTxt}</div>`:''}
+      </td>`;
     };
-    const roasCell = (row, bold=false) => row
-      ? `<span style="${bold?'font-weight:600;':''}color:${row.roas>=4?'var(--green)':row.roas>=2?'var(--amber)':'var(--red)'}">${row.roas?row.roas.toFixed(2)+'x':'—'}</span>`
-      : '<span style="color:var(--text3)">—</span>';
+    const roasCC = (mV, cV, dl) => {
+      const fv = v => v ? (+v).toFixed(2)+'x' : '—';
+      const mClr = mV ? (mV>=4?'var(--green)':mV>=2?'var(--amber)':'var(--red)') : 'var(--text3)';
+      const eff = dl; const dClr = dl===null?'':eff>0?'var(--green)':eff<0?'var(--red)':'var(--text3)';
+      return `<td style="white-space:nowrap;vertical-align:top;padding:7px 10px">
+        <div style="font-size:12px;font-weight:700;color:${mClr}">${fv(mV)}</div>
+        <div style="font-size:10px;color:var(--text3)">${fv(cV)}</div>
+        ${dl!==null?`<div style="font-size:10px;font-weight:700;color:${dClr}">${dl>0?'+':''}${dl}%</div>`:''}
+      </td>`;
+    };
+    const sub = t => `<span style="font-weight:400;color:var(--text3);font-size:9px;display:block">${t}</span>`;
 
     el.innerHTML = `<table>
       <thead><tr>
-        <th>Creative</th>
-        <th>Main ROAS</th><th>Comp ROAS</th><th>ROAS Δ</th>
-        <th>Main Spend</th><th>Comp Spend</th><th>Spend Δ</th>
-        <th>Main CTR%</th><th>Comp CTR%</th><th>CTR Δ</th>
-        <th>Main Conv.</th><th>Comp Conv.</th><th>Conv. Δ</th>
-        <th>Status</th>
+        <th>Creative</th><th>Campaign</th><th>Ad Set</th><th>Status</th>
+        <th>ROAS${sub('main / comp / Δ')}</th>
+        <th>Spend${sub('main / comp / Δ')}</th>
+        <th>CTR%${sub('main / comp / Δ')}</th>
+        <th>Impressions${sub('main / comp / Δ')}</th>
+        ${hasReach ? `<th>Reach${sub('main / comp / Δ')}</th>` : ''}
+        <th>Frequency${sub('main / comp')}</th>
+        <th>CPM${sub('main / comp / Δ')}</th>
+        <th>CPC${sub('main / comp / Δ')}</th>
+        <th>Conversions${sub('main / comp / Δ')}</th>
+        <th>CPA${sub('main / comp / Δ')}</th>
+        ${hasRev ? `<th>Revenue${sub('main / comp / Δ')}</th>` : ''}
+        ${hasAtc ? `<th>ATC${sub('main / comp / Δ')}</th>` : ''}
+        ${hasVideo ? `<th>Hook%${sub('main / comp / Δ')}</th><th>Hold%${sub('main / comp / Δ')}</th>` : ''}
       </tr></thead>
       <tbody>${enriched.map(e => {
-        const statusBadge = e.badge === 'new'
+        const m = e.m, c = e.c;
+        const row = m || c;
+        const statusBadge = e.badge==='new'
           ? `<span style="background:rgba(34,201,147,.15);color:var(--green);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600">★ NEW</span>`
-          : e.badge === 'ended'
+          : e.badge==='ended'
           ? `<span style="background:rgba(240,79,95,.12);color:var(--red);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600">✕ ENDED</span>`
           : `<span style="background:rgba(79,110,247,.12);color:var(--accent);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:600">↔ ACTIVE</span>`;
         return `<tr>
           <td style="font-weight:500;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e.name}">${e.name.length>24?e.name.slice(0,24)+'…':e.name}</td>
-          <td>${roasCell(e.m,true)}</td>
-          <td>${roasCell(e.c)}</td>
-          <td>${deltaBadge(e.rDelta)}</td>
-          <td style="color:var(--text2)">${e.m?.spend ? S.currency+fmtNum(e.m.spend) : '—'}</td>
-          <td style="color:var(--text3)">${e.c?.spend ? S.currency+fmtNum(e.c.spend) : '—'}</td>
-          <td>${deltaBadge(e.sDelta)}</td>
-          <td style="color:var(--text2)">${e.m?.ctr ? e.m.ctr.toFixed(2)+'%' : '—'}</td>
-          <td style="color:var(--text3)">${e.c?.ctr ? e.c.ctr.toFixed(2)+'%' : '—'}</td>
-          <td>${deltaBadge(e.cDelta)}</td>
-          <td style="color:var(--text2)">${e.m?.purchases || '—'}</td>
-          <td style="color:var(--text3)">${e.c?.purchases || '—'}</td>
-          <td>${deltaBadge(e.pDelta)}</td>
+          <td style="font-size:10px;color:var(--text3);max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${row?.campaignName||''}">${row?.campaignName||'—'}</td>
+          <td style="font-size:10px;color:var(--text3);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${row?.adsetName||''}">${row?.adsetName||'—'}</td>
           <td>${statusBadge}</td>
+          ${roasCC(m?.roas,c?.roas,e.rDelta)}
+          ${cc(m?.spend,c?.spend,e.sDelta,'curr')}
+          ${cc(m?.ctr,c?.ctr,e.cDelta,'pct')}
+          ${cc(m?.impressions,c?.impressions,e.impDelta,'num')}
+          ${hasReach?cc(m?.reach,c?.reach,e.reachDelta,'num'):''}
+          <td style="white-space:nowrap;vertical-align:top;padding:7px 10px">
+            <div style="font-size:12px;font-weight:600;color:${m?.frequency>3?'var(--red)':m?.frequency>2?'var(--amber)':'var(--text)'}">${m?.frequency?m.frequency.toFixed(1)+'x':'—'}</div>
+            <div style="font-size:10px;color:var(--text3)">${c?.frequency?c.frequency.toFixed(1)+'x':'—'}</div>
+            ${e.freqDelta!==null?`<div style="font-size:10px;font-weight:700;color:${e.freqDelta<0?'var(--green)':'var(--red)'}">${e.freqDelta>0?'+':''}${e.freqDelta}%</div>`:''}
+          </td>
+          ${cc(m?.cpm,c?.cpm,e.cpmDelta,'curr0',true)}
+          ${cc(m?.cpc,c?.cpc,e.cpcDelta,'curr0',true)}
+          ${cc(m?.purchases||0,c?.purchases||0,e.pDelta,'num')}
+          ${cc(m?.cpa||null,c?.cpa||null,e.cpaDelta,'curr0',true)}
+          ${hasRev?cc(m?.revenue||0,c?.revenue||0,e.revDelta,'curr'):''}
+          ${hasAtc?cc(m?.addsToCart||0,c?.addsToCart||0,e.atcDelta,'num'):''}
+          ${hasVideo?`${cc(m?.hookRate,c?.hookRate,e.hookDelta,'pct1')}${cc(m?.holdRate,c?.holdRate,e.holdDelta,'pct1')}`:''}
         </tr>`;
       }).join('')}</tbody></table>`;
 
   } else {
     // ── SORTABLE ALL-METRICS MODE ────────────────────
     if (titleEl) titleEl.textContent = 'All creatives — sortable';
-    if (sortSel) sortSel.style.display = '';
-    if (hintEl) hintEl.innerHTML = comp === null && S.dateCompare.mode !== 'none'
-      ? '<span style="color:var(--amber)">⚠ No comparison data found for the selected period.</span>'
-      : '<span style="color:var(--text3)">Set a comparison period in the date filter bar to see period-over-period deltas.</span>';
+
+    // Restore sort options to sortable-mode set
+    if (sortSel) {
+      const cur = sortSel.value;
+      const opts = [
+        ['roas','Sort: ROAS'],['spend','Sort: Spend'],['purchases','Sort: Purchases'],
+        ['ctr','Sort: CTR%'],['cpa','Sort: CPA'],['impressions','Sort: Impressions'],
+        ['hookRate','Sort: Hook%'],['holdRate','Sort: Hold%'],['frequency','Sort: Frequency'],
+        ['cpm','Sort: CPM'],['cpc','Sort: CPC'],['revenue','Sort: Revenue'],
+      ];
+      sortSel.innerHTML = opts.map(([v,l]) => `<option value="${v}"${cur===v?' selected':''}>${l}</option>`).join('');
+    }
+
+    if (hintEl) hintEl.innerHTML = comp===null && S.dateCompare.mode!=='none'
+      ? '<span style="color:var(--amber)">⚠ No comparison data in that period. Showing sortable table.</span>'
+      : '<span style="color:var(--text3)">Set a comparison period in the date bar above to see period-over-period deltas for every metric.</span>';
 
     const metric = sortSel?.value || 'roas';
-    const sorted = [...data].sort((a, b) => b[metric] - a[metric]);
-    const maxCTR = Math.max(...sorted.map(c => c.ctr || 0));
+    const sorted = [...data].sort((a, b) => (b[metric]||0) - (a[metric]||0));
+    const maxCTR = Math.max(...sorted.map(c => c.ctr || 0), 0.001);
     const hasVideo = sorted.some(c => c.hookRate !== null);
-    const hasAtc   = sorted.some(c => c.addsToCart > 0);
-    const hasRev   = sorted.some(c => c.revenue > 0);
+    const hasAtc   = sorted.some(c => (c.addsToCart||0) > 0);
+    const hasRev   = sorted.some(c => (c.revenue||0)   > 0);
 
     el.innerHTML = `<table>
       <thead><tr>
         <th>Creative</th><th>Campaign</th><th>Ad Set</th><th>Format</th><th>Status</th>
-        <th>Impr.</th><th>Reach</th><th>Freq.</th>
+        <th>Impressions</th><th>Reach</th><th>Freq.</th>
         <th>CTR%</th><th>CPM</th><th>CPC</th>
         ${hasVideo ? '<th>Hook%</th><th>Hold%</th>' : ''}
         ${hasAtc ? '<th>ATC</th>' : ''}
-        <th>Purchases</th><th>CPA</th>
+        <th>Conv.</th><th>CPA</th>
         ${hasRev ? '<th>Revenue</th>' : ''}
         <th>ROAS</th><th>Spend</th><th>Score</th>
       </tr></thead>
       <tbody>${sorted.map(c => {
-        const score = c.tier === 'top' ? 'A' : c.tier === 'mid' ? 'B' : 'C';
-        const pct = maxCTR > 0 ? Math.round((c.ctr / maxCTR) * 100) : 0;
+        const score = c.tier==='top'?'A':c.tier==='mid'?'B':'C';
+        const pct   = Math.round((c.ctr/maxCTR)*100);
         const thumb = c.url
-          ? (c.mediaType === 'video' ? `<video src="${c.url}" class="td-thumb" muted></video>` : `<img src="${c.url}" class="td-thumb" alt="">`)
+          ? (c.mediaType==='video'?`<video src="${c.url}" class="td-thumb" muted></video>`:`<img src="${c.url}" class="td-thumb" alt="">`)
           : `<div class="td-thumb" style="display:flex;align-items:center;justify-content:center;font-size:12px">🖼</div>`;
         return `<tr>
-          <td><div class="td-name">${thumb}<span title="${c.adName}">${c.adName.length > 22 ? c.adName.slice(0, 22) + '…' : c.adName}</span></div></td>
-          <td style="font-size:11px;color:var(--text3);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.campaignName}</td>
-          <td style="font-size:11px;color:var(--text3);max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.adsetName}</td>
+          <td><div class="td-name">${thumb}<span title="${c.adName}">${c.adName.length>22?c.adName.slice(0,22)+'…':c.adName}</span></div></td>
+          <td style="font-size:11px;color:var(--text3);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.campaignName}">${c.campaignName}</td>
+          <td style="font-size:11px;color:var(--text3);max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.adsetName}">${c.adsetName}</td>
           <td>${c.format}</td>
           <td><span class="spill sp-${c.status}">${c.status}</span></td>
           <td>${fmtNum(c.impressions)}</td>
-          <td>${c.reach ? fmtNum(c.reach) : '—'}</td>
-          <td style="color:${c.frequency>3?'var(--red)':c.frequency>2?'var(--amber)':'var(--text2)'}">${c.frequency ? c.frequency.toFixed(1) + 'x' : '—'}</td>
+          <td>${c.reach?fmtNum(c.reach):'—'}</td>
+          <td style="color:${c.frequency>3?'var(--red)':c.frequency>2?'var(--amber)':'var(--text2)'}">${c.frequency?c.frequency.toFixed(1)+'x':'—'}</td>
           <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>${c.ctr.toFixed(2)}%</div></td>
-          <td>${c.cpm ? S.currency + c.cpm.toFixed(0) : '—'}</td>
-          <td>${c.cpc ? S.currency + c.cpc.toFixed(0) : '—'}</td>
-          ${hasVideo ? `<td style="color:${c.hookRate!==null?(c.hookRate>=25?'var(--green)':c.hookRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.hookRate !== null ? c.hookRate + '%' : '—'}</td><td style="color:${c.holdRate!==null?(c.holdRate>=30?'var(--green)':c.holdRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.holdRate !== null ? c.holdRate + '%' : '—'}</td>` : ''}
-          ${hasAtc ? `<td>${c.addsToCart || '—'}</td>` : ''}
-          <td>${c.purchases || '—'}</td>
-          <td>${c.cpa ? S.currency + c.cpa.toFixed(0) : '—'}</td>
-          ${hasRev ? `<td>${c.revenue ? S.currency + fmtNum(c.revenue) : '—'}</td>` : ''}
-          <td style="color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${c.roas ? c.roas.toFixed(2) + 'x' : '—'}</td>
-          <td>${c.spend ? S.currency + fmtNum(c.spend) : '—'}</td>
+          <td>${c.cpm?S.currency+c.cpm.toFixed(0):'—'}</td>
+          <td>${c.cpc?S.currency+c.cpc.toFixed(0):'—'}</td>
+          ${hasVideo?`<td style="color:${c.hookRate!==null?(c.hookRate>=25?'var(--green)':c.hookRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.hookRate!==null?c.hookRate+'%':'—'}</td><td style="color:${c.holdRate!==null?(c.holdRate>=30?'var(--green)':c.holdRate>=15?'var(--amber)':'var(--red)'):'var(--text3)'}">${c.holdRate!==null?c.holdRate+'%':'—'}</td>`:''}
+          ${hasAtc?`<td>${c.addsToCart||'—'}</td>`:''}
+          <td>${c.purchases||'—'}</td>
+          <td>${c.cpa?S.currency+c.cpa.toFixed(0):'—'}</td>
+          ${hasRev?`<td>${c.revenue?S.currency+fmtNum(c.revenue):'—'}</td>`:''}
+          <td style="color:${c.roas>=4?'var(--green)':c.roas>=2?'var(--amber)':'var(--red)'};font-weight:600">${c.roas?c.roas.toFixed(2)+'x':'—'}</td>
+          <td>${c.spend?S.currency+fmtNum(c.spend):'—'}</td>
           <td><div class="score-dot s-${score}">${score}</div></td>
         </tr>`;
       }).join('')}</tbody></table>`;
