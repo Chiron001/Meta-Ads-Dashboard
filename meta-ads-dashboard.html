@@ -409,6 +409,46 @@ textarea.form-input{resize:vertical;min-height:80px;}
         <div id="badge-excel" class="dz-badge" style="display:none"></div>
       </div>
     </div>
+
+    <!-- META API FETCH PANEL -->
+    <div class="panel" id="meta-api-panel" style="margin-bottom:20px">
+      <div class="section-hdr">
+        <h2>Connect Meta Ads API</h2>
+        <span id="meta-api-status" style="font-size:11px;color:var(--text3)">Not configured</span>
+      </div>
+      <div id="meta-api-unconfigured">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:6px">Pull live data directly from your Meta Ads account — no manual Excel export needed.</p>
+        <p style="font-size:11px;color:var(--text3)">Go to <span onclick="navigate('settings')" style="color:var(--accent);cursor:pointer;text-decoration:underline">Settings → Meta API</span> to enter your credentials, then come back here to fetch.</p>
+      </div>
+      <div id="meta-api-configured" style="display:none">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <select id="meta-date-preset" onchange="toggleMetaCustomDates()" style="font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif">
+            <option value="last_7_d">Last 7 days</option>
+            <option value="last_14_d">Last 14 days</option>
+            <option value="last_30_d" selected>Last 30 days</option>
+            <option value="last_60_d">Last 60 days</option>
+            <option value="last_90_d">Last 90 days</option>
+            <option value="this_month">This month</option>
+            <option value="last_month">Last month</option>
+            <option value="custom">Custom range…</option>
+          </select>
+          <div id="meta-custom-dates" style="display:none;gap:8px;align-items:center">
+            <input type="date" id="meta-from" class="date-input">
+            <span style="color:var(--text3)">→</span>
+            <input type="date" id="meta-to" class="date-input">
+          </div>
+          <button class="btn btn-primary btn-sm" id="meta-fetch-btn" onclick="fetchFromMeta()">↓ Fetch from Meta</button>
+          <span id="meta-fetch-status" style="font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div id="meta-fetch-progress" style="display:none;margin-top:8px">
+          <div style="height:3px;background:var(--bg4);border-radius:2px;margin-bottom:6px">
+            <div id="meta-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:2px;width:0%;transition:width .4s"></div>
+          </div>
+          <div id="meta-progress-text" style="font-size:11px;color:var(--text3)"></div>
+        </div>
+      </div>
+    </div>
+
     <div id="upload-pending" style="display:none" class="panel">
       <div class="section-hdr">
         <h2>Pending upload</h2>
@@ -758,6 +798,45 @@ textarea.form-input{resize:vertical;min-height:80px;}
 
   <!-- SETTINGS -->
   <div id="page-settings" class="page">
+
+    <!-- META API CREDENTIALS -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-hdr"><h2>Meta Ads API</h2><span id="meta-settings-status" style="font-size:11px;color:var(--text3)"></span></div>
+      <div class="settings-form">
+        <div class="form-row">
+          <label class="form-label">Ad Account ID</label>
+          <input id="st-meta-account" class="form-input" placeholder="1234567890  (without act_ prefix)">
+          <span class="form-hint">Find in Ads Manager URL — the number after <code>?act=</code>. e.g. business.facebook.com/adsmanager/…<strong>?act=1234567890</strong></span>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Access Token</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="st-meta-token" type="password" class="form-input" placeholder="EAAxxxxxxxxxxxxxxxx…" style="flex:1">
+            <button class="btn btn-ghost btn-sm" onclick="toggleMetaTokenVisibility()" id="meta-token-toggle" style="white-space:nowrap">Show</button>
+          </div>
+          <span class="form-hint">
+            Get from <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a>:
+            select your app → click <em>Generate Access Token</em> → add <code>ads_read</code> permission.
+            For permanent access, create a <strong>System User</strong> token in Meta Business Manager (never expires).
+            Tokens are stored only in your browser.
+          </span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="saveMetaSettings()">Save credentials</button>
+          <button id="test-meta-btn" class="btn btn-ghost btn-sm" onclick="testMetaConnection()">Test connection</button>
+          <span id="meta-test-result" style="font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div style="margin-top:14px;padding:12px 14px;background:var(--bg3);border-radius:var(--r);font-size:11px;color:var(--text3);line-height:1.7">
+          <strong style="color:var(--text2)">Step-by-step:</strong><br>
+          1. Go to <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--accent)">developers.facebook.com/apps</a> → Create a free app (type: <em>Other → Business</em>).<br>
+          2. Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a> → select your app → click <em>Generate Access Token</em>.<br>
+          3. Add permission <code>ads_read</code> → copy the token above.<br>
+          4. For long-lived tokens: in Business Manager → System Users → Add System User → Generate Token with <code>ads_read</code>.<br>
+          <strong style="color:var(--green)">Meta explicitly allows read-only data access</strong> for your own ad accounts — no App Review required.
+        </div>
+      </div>
+    </div>
+
     <div class="two-col" style="margin-bottom:20px">
       <div class="panel">
         <div class="section-hdr"><h2>AI Configuration</h2></div>
@@ -971,6 +1050,7 @@ async function loadFromDB() {
   S.currency = S.settings.currency || '₹';
   document.getElementById('db-status').textContent =
     `${S.reports.length} report${S.reports.length !== 1 ? 's' : ''} · ${S.media.size} media · ${S.creatives.size} SKUs`;
+  renderMetaApiPanel();
 }
 
 async function saveReportToDB(report) {
@@ -1264,6 +1344,7 @@ function goPage(name) {
   document.getElementById('topbar-actions').style.display = showActions ? 'flex' : 'none';
   updateDateFilterBar(name);
   syncReportPills();
+  if (name === 'upload')    renderMetaApiPanel();
   if (name === 'library')   renderLibrary();
   if (name === 'reports')   renderReports();
   if (name === 'dashboard') renderDashboard();
@@ -1275,6 +1356,8 @@ function goPage(name) {
   if (name === 'knowledge') renderKnowledge();
   if (name === 'settings')  renderSettings();
 }
+
+function navigate(name) { goPage(name); }
 
 function syncReportPills() {
   const container = document.getElementById('report-pills');
@@ -2980,11 +3063,17 @@ async function clearKnowledge() {
 // SETTINGS
 // ═══════════════════════════════════════════════════
 function renderSettings() {
-  document.getElementById('st-apikey').value  = S.settings.apiKey  || '';
-  document.getElementById('st-proxy').value   = S.settings.proxy   || '';
+  document.getElementById('st-apikey').value   = S.settings.apiKey  || '';
+  document.getElementById('st-proxy').value    = S.settings.proxy   || '';
   document.getElementById('st-currency').value = S.settings.currency || '₹';
-
-  // Storage estimate
+  document.getElementById('st-meta-token').value   = S.settings.metaToken       || '';
+  document.getElementById('st-meta-account').value = S.settings.metaAdAccountId || '';
+  const statusEl = document.getElementById('meta-settings-status');
+  if (statusEl) {
+    const ok = S.settings.metaToken && S.settings.metaAdAccountId;
+    statusEl.textContent = ok ? `act_${S.settings.metaAdAccountId}` : 'Not configured';
+    statusEl.style.color = ok ? 'var(--green)' : 'var(--text3)';
+  }
   if (navigator.storage?.estimate) {
     navigator.storage.estimate().then(({ usage, quota }) => {
       const el = document.getElementById('storage-stats');
@@ -3002,6 +3091,215 @@ async function saveSettings() {
   await saveSetting('currency', currency);
   S.currency = currency;
   toast('✓ Settings saved');
+}
+
+// ═══════════════════════════════════════════════════
+// META ADS API
+// ═══════════════════════════════════════════════════
+async function saveMetaSettings() {
+  const token     = document.getElementById('st-meta-token').value.trim();
+  const accountId = document.getElementById('st-meta-account').value.trim().replace(/^act_/i, '');
+  await saveSetting('metaToken',       token);
+  await saveSetting('metaAdAccountId', accountId);
+  renderSettings();
+  renderMetaApiPanel();
+  toast('✓ Meta API credentials saved');
+}
+
+async function testMetaConnection() {
+  const token     = document.getElementById('st-meta-token').value.trim();
+  const accountId = document.getElementById('st-meta-account').value.trim().replace(/^act_/i, '');
+  const resultEl  = document.getElementById('meta-test-result');
+  const btn       = document.getElementById('test-meta-btn');
+  if (!token || !accountId) { toast('Enter token and account ID first'); return; }
+  btn.textContent = 'Testing…'; btn.disabled = true;
+  resultEl.textContent = ''; resultEl.style.color = 'var(--text3)';
+  try {
+    const url = `https://graph.facebook.com/v21.0/act_${accountId}?fields=name,currency,timezone_name&access_token=${encodeURIComponent(token)}`;
+    const res  = await fetch(url);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error.message);
+    resultEl.textContent = `✓ ${json.name} · ${json.currency} · ${json.timezone_name}`;
+    resultEl.style.color = 'var(--green)';
+    btn.textContent = '✓ Connected'; btn.style.background = 'rgba(34,201,147,.15)'; btn.style.color = 'var(--green)';
+  } catch(e) {
+    resultEl.textContent = '✕ ' + e.message;
+    resultEl.style.color = 'var(--red)';
+    btn.textContent = 'Test connection';
+  }
+  btn.disabled = false;
+}
+
+function toggleMetaTokenVisibility() {
+  const inp = document.getElementById('st-meta-token');
+  const btn = document.getElementById('meta-token-toggle');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+}
+
+function renderMetaApiPanel() {
+  const configured = !!(S.settings.metaToken && S.settings.metaAdAccountId);
+  const unconf = document.getElementById('meta-api-unconfigured');
+  const conf   = document.getElementById('meta-api-configured');
+  const status = document.getElementById('meta-api-status');
+  if (unconf) unconf.style.display = configured ? 'none' : 'block';
+  if (conf)   conf.style.display   = configured ? 'block' : 'none';
+  if (status) {
+    status.textContent = configured ? `act_${S.settings.metaAdAccountId}` : 'Not configured';
+    status.style.color = configured ? 'var(--green)' : 'var(--text3)';
+  }
+}
+
+function toggleMetaCustomDates() {
+  const preset = document.getElementById('meta-date-preset')?.value;
+  const wrap   = document.getElementById('meta-custom-dates');
+  if (wrap) wrap.style.display = preset === 'custom' ? 'flex' : 'none';
+}
+
+async function fetchFromMeta() {
+  const token     = S.settings.metaToken;
+  const accountId = S.settings.metaAdAccountId;
+  if (!token || !accountId) { toast('Configure Meta API in Settings first'); navigate('settings'); return; }
+
+  const preset    = document.getElementById('meta-date-preset')?.value || 'last_30_d';
+  const fetchBtn  = document.getElementById('meta-fetch-btn');
+  const statusEl  = document.getElementById('meta-fetch-status');
+  const progDiv   = document.getElementById('meta-fetch-progress');
+  const progBar   = document.getElementById('meta-progress-bar');
+  const progText  = document.getElementById('meta-progress-text');
+
+  const setProgress = (pct, msg) => {
+    if (progBar)  progBar.style.width = pct + '%';
+    if (progText) progText.textContent = msg;
+  };
+
+  fetchBtn.disabled = true; fetchBtn.textContent = 'Fetching…';
+  progDiv.style.display = 'block'; setProgress(5, 'Connecting to Meta…');
+  if (statusEl) { statusEl.textContent = ''; }
+
+  try {
+    let dateParam;
+    if (preset === 'custom') {
+      const from = document.getElementById('meta-from')?.value;
+      const to   = document.getElementById('meta-to')?.value;
+      if (!from || !to) { toast('Select a custom date range'); return; }
+      dateParam = `time_range=${encodeURIComponent(JSON.stringify({ since: from, until: to }))}`;
+    } else {
+      dateParam = `date_preset=${preset}`;
+    }
+
+    const fields = encodeURIComponent([
+      'campaign_name','adset_name','ad_name',
+      'impressions','reach','frequency','spend',
+      'inline_link_clicks','cpm','cpc',
+      'actions','action_values',
+      'video_30_sec_watched_actions','video_p100_watched_actions',
+    ].join(','));
+
+    const baseUrl = `https://graph.facebook.com/v21.0/act_${accountId}/insights`
+      + `?fields=${fields}&level=ad&time_increment=1&limit=500`
+      + `&${dateParam}&access_token=${encodeURIComponent(token)}`;
+
+    let allRows = [], nextUrl = baseUrl, page = 0;
+
+    while (nextUrl) {
+      page++;
+      setProgress(Math.min(85, 5 + page * 8), `Page ${page} · ${allRows.length} rows fetched…`);
+      const res  = await fetch(nextUrl);
+      const json = await res.json();
+      if (json.error) throw new Error(`(${json.error.code}) ${json.error.message}`);
+      (json.data || []).forEach(r => allRows.push(normalizeMetaRow(r)));
+      nextUrl = json.paging?.next || null;
+    }
+
+    if (!allRows.length) { toast('No data returned for this period.'); return; }
+
+    setProgress(92, `Processing ${allRows.length} rows…`);
+
+    // Attach any uploaded media by ad name match
+    allRows.forEach(row => {
+      if (!row.url) {
+        const m = findMedia(normFile(row.adName));
+        if (m) { row.url = m.url; row.mediaType = m.type; }
+      }
+    });
+
+    const dateMin = allRows.reduce((a,r) => (!a||r.rowDate<a) ? r.rowDate : a, '');
+    const dateMax = allRows.reduce((a,r) => (!a||r.rowDate>a) ? r.rowDate : a, '');
+
+    S.pending.rows      = allRows;
+    S.pending.excelFile = null;
+    S.pending.dateStart = dateMin;
+    S.pending.dateEnd   = dateMax;
+    S.pending.source    = 'meta_api';
+
+    const labelEl = document.getElementById('report-label');
+    if (labelEl) labelEl.value = `Meta API · ${fmtDate(dateMin)} – ${fmtDate(dateMax)}`;
+
+    setProgress(100, `✓ ${allRows.length} daily rows loaded`);
+    refreshPendingUI();
+    document.getElementById('upload-pending').style.display = 'block';
+
+    if (statusEl) { statusEl.textContent = `${allRows.length} rows ready · ${fmtDate(dateMin)} – ${fmtDate(dateMax)}`; statusEl.style.color = 'var(--green)'; }
+    toast(`✓ ${allRows.length} rows fetched from Meta API`);
+
+  } catch(e) {
+    toast('Meta API error: ' + e.message);
+    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = 'var(--red)'; }
+    setProgress(0, '');
+  } finally {
+    fetchBtn.disabled = false; fetchBtn.textContent = '↓ Fetch from Meta';
+    setTimeout(() => { progDiv.style.display = 'none'; setProgress(0,''); }, 4000);
+  }
+}
+
+function normalizeMetaRow(r) {
+  const act = (arr, type) => {
+    if (!arr) return 0;
+    // try exact match first, then partial match for fb_pixel variants
+    const found = arr.find(a => a.action_type === type)
+                || arr.find(a => a.action_type.includes(type));
+    return found ? parseFloat(found.value || 0) : 0;
+  };
+  const video = (arr) => arr?.length ? parseFloat(arr[0].value || 0) : 0;
+
+  const impressions = parseInt(r.impressions || 0);
+  const linkClicks  = parseInt(r.inline_link_clicks || 0) || act(r.actions, 'link_click');
+  const spend       = parseFloat(r.spend || 0);
+  const reach       = parseInt(r.reach   || 0);
+  const frequency   = parseFloat(r.frequency || 0);
+  const cpm         = parseFloat(r.cpm || 0);
+  const cpc         = parseFloat(r.cpc || 0);
+
+  // Purchases: try standard key, then fb_pixel variant
+  const purchases = act(r.actions, 'purchase');
+  const revenue   = act(r.action_values, 'purchase');
+  const addsToCart = act(r.actions, 'add_to_cart');
+  const video3s    = video(r.video_30_sec_watched_actions);
+  const thruplay   = video(r.video_p100_watched_actions);
+
+  const ctr      = impressions > 0 && linkClicks > 0 ? +((linkClicks / impressions) * 100).toFixed(2) : parseFloat(r.ctr || 0);
+  const roas     = revenue > 0 && spend > 0 ? +(revenue / spend).toFixed(2) : 0;
+  const cpa      = purchases > 0 && spend > 0 ? +(spend / purchases).toFixed(2) : 0;
+  const hookRate = impressions > 0 && video3s > 0 ? +((video3s / impressions) * 100).toFixed(1) : null;
+  const holdRate = video3s > 0 && thruplay > 0 ? +((thruplay / video3s) * 100).toFixed(1) : null;
+
+  return {
+    adName:       r.ad_name       || 'Unknown Ad',
+    adsetName:    r.adset_name    || 'Unknown Ad Set',
+    campaignName: r.campaign_name || 'Unknown Campaign',
+    format:  video3s > 0 ? 'Video' : 'Image',
+    status:  'active',
+    impressions, reach, spend, linkClicks, purchases, addsToCart,
+    revenue, video3s, thruplay, frequency, cpm, cpc, ctr, roas, cpa,
+    hookRate, holdRate,
+    rowDate:   r.date_start || '',
+    tier:      roas >= 4 ? 'top' : roas >= 2 ? 'mid' : 'low',
+    url:       null,
+    mediaType: null,
+    _rws: roas * spend,
+    _rw:  spend,
+  };
 }
 
 function exportAllData() {
