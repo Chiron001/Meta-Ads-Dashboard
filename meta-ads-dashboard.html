@@ -233,6 +233,49 @@ tbody tr:hover td{background:var(--bg3);}
 .ins-caret{font-size:10px;color:var(--text3);transition:transform .2s;}
 .ins-campaign-hdr.open .ins-caret,.ins-adset-hdr.open .ins-caret{transform:rotate(90deg);}
 
+/* Strategy page */
+.strat-card{border-radius:14px;margin-bottom:14px;overflow:hidden;border:1px solid var(--border);}
+.strat-card-hdr{display:flex;align-items:flex-start;gap:12px;padding:16px 18px;cursor:pointer;user-select:none;background:var(--bg3);transition:background .13s;}
+.strat-card-hdr:hover{background:var(--bg4);}
+.strat-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:1px;}
+.strat-card-hdr-text{flex:1;min-width:0;}
+.strat-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.strat-card-subtitle{font-size:11px;color:var(--text3);line-height:1.5;}
+.strat-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.strat-badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.strat-badge-boost{background:rgba(34,201,147,0.15);color:var(--green);}
+.strat-badge-pause{background:rgba(240,79,95,0.15);color:var(--red);}
+.strat-badge-watch{background:rgba(245,166,35,0.15);color:var(--amber);}
+.strat-card-body{display:none;background:var(--bg2);border-top:1px solid var(--border);}
+.strat-card-body.open{display:block;}
+.strat-section{padding:14px 18px;border-bottom:1px solid var(--border);}
+.strat-section:last-child{border-bottom:none;}
+.strat-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px;}
+.strat-why{font-size:12px;color:var(--text2);line-height:1.75;}
+.strat-why strong{color:var(--text);font-weight:500;}
+.strat-metric-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+.strat-metric{font-size:11px;padding:3px 10px;border-radius:7px;background:var(--bg3);}
+.strat-metric.good{background:rgba(34,201,147,0.1);color:var(--green);}
+.strat-metric.bad{background:rgba(240,79,95,0.1);color:var(--red);}
+.strat-metric.warn{background:rgba(245,166,35,0.1);color:var(--amber);}
+.strat-metric.neu{background:var(--bg4);color:var(--text2);}
+.strat-day-list{list-style:none;margin:0;padding:0;}
+.strat-day{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
+.strat-day-label{font-size:10px;font-weight:700;color:var(--accent);background:rgba(91,124,247,0.12);padding:3px 9px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:1px;}
+.strat-day-text{font-size:12px;color:var(--text2);line-height:1.65;}
+.strat-day-text strong{color:var(--text);font-weight:500;}
+.strat-caret{font-size:10px;color:var(--text3);transition:transform .18s;margin-top:2px;}
+.strat-card-hdr.open .strat-caret{transform:rotate(90deg);}
+.strat-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.strat-summary-cell{background:var(--bg3);border-radius:10px;padding:14px 16px;text-align:center;}
+.strat-summary-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;line-height:1;}
+.strat-summary-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:4px;}
+@media(max-width:768px){
+  .strat-summary-grid{grid-template-columns:1fr 1fr;}
+  .strat-card-hdr{padding:12px 14px;}
+  .strat-section{padding:12px 14px;}
+}
+
 /* AI Chat */
 .chat-wrap{display:flex;flex-direction:column;height:340px;}
 .chat-messages{flex:1;overflow-y:auto;padding:4px 0;margin-bottom:12px;}
@@ -415,6 +458,7 @@ textarea.form-input{resize:vertical;min-height:80px;}
     <div class="nav-item" onclick="goPage('compare')"><span class="nav-icon">⇄</span>Compare</div>
     <div class="nav-item" onclick="goPage('trends')"><span class="nav-icon">↗</span>Trends</div>
     <div class="nav-item" onclick="goPage('insights')"><span class="nav-icon">◈</span>Insights & AI</div>
+    <div class="nav-item" onclick="goPage('strategy')"><span class="nav-icon">🎯</span>Strategy</div>
     <div class="nav-section">Config</div>
     <div class="nav-item" onclick="goPage('knowledge')"><span class="nav-icon">📚</span>Knowledge</div>
     <div class="nav-item" onclick="goPage('settings')"><span class="nav-icon">⚙</span>Settings</div>
@@ -762,13 +806,25 @@ textarea.form-input{resize:vertical;min-height:80px;}
       <div id="insights-tier-bars"></div>
     </div>
 
-    <!-- Hierarchy tree -->
+    <!-- Tabs + Hierarchy tree -->
     <div class="panel" style="margin-bottom:20px">
-      <div class="section-hdr">
-        <h2>Campaign → Ad Set → Ad Analysis</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="insightsExpandAll()">Expand all</button>
-          <button class="btn btn-ghost btn-sm" onclick="insightsCollapseAll()">Collapse all</button>
+          <button class="tag-btn active" id="ins-tab-campaigns" onclick="setInsightsTab('campaigns')">🏢 Campaigns</button>
+          <button class="tag-btn" id="ins-tab-adsets"   onclick="setInsightsTab('adsets')">📂 Ad Sets</button>
+          <button class="tag-btn" id="ins-tab-ads"      onclick="setInsightsTab('ads')">🎯 Ads</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="ins-search" class="form-input" style="padding:5px 10px;font-size:11px;max-width:200px" placeholder="Search…" oninput="renderInsights()">
+          <select id="ins-sort" onchange="renderInsights()" style="font-size:11px;padding:5px 9px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2)">
+            <option value="roas">Sort by ROAS</option>
+            <option value="spend">Sort by Spend</option>
+            <option value="purchases">Sort by Purchases</option>
+            <option value="ctr">Sort by CTR</option>
+            <option value="impressions">Sort by Impressions</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" id="ins-expand-btn" onclick="insightsExpandAll()" style="display:none">Expand all</button>
+          <button class="btn btn-ghost btn-sm" id="ins-collapse-btn" onclick="insightsCollapseAll()" style="display:none">Collapse all</button>
         </div>
       </div>
       <div id="insights-tree"><div class="empty"><div class="empty-icon">◈</div><h3>No data loaded</h3><p>Upload an Excel report and select a date range.</p></div></div>
@@ -804,6 +860,44 @@ textarea.form-input{resize:vertical;min-height:80px;}
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- STRATEGY -->
+  <div id="page-strategy" class="page">
+
+    <!-- Summary banner -->
+    <div id="strategy-summary-bar" class="panel" style="margin-bottom:20px"></div>
+
+    <!-- Boost section -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-hdr">
+        <h2 style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:8px;background:rgba(34,201,147,0.15);color:var(--green);display:inline-flex;align-items:center;justify-content:center;font-size:13px">↑</span> Boost These Ads</h2>
+        <span id="strategy-boost-count" style="font-size:11px;color:var(--green)"></span>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px">These ads are working well and deserve more budget. Here's exactly what to do with each one over the next 7 days.</p>
+      <div id="strategy-boost-list"><div class="empty"><div class="empty-icon">↑</div><h3>No data</h3><p>Load a report first.</p></div></div>
+    </div>
+
+    <!-- Pause section -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-hdr">
+        <h2 style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:8px;background:rgba(240,79,95,0.15);color:var(--red);display:inline-flex;align-items:center;justify-content:center;font-size:13px">✕</span> Pause or Rework These Ads</h2>
+        <span id="strategy-pause-count" style="font-size:11px;color:var(--red)"></span>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px">These ads are spending money without delivering results. Pausing them will free up budget for better performers.</p>
+      <div id="strategy-pause-list"><div class="empty"><div class="empty-icon">✕</div><h3>No data</h3><p>Load a report first.</p></div></div>
+    </div>
+
+    <!-- Watch section -->
+    <div class="panel">
+      <div class="section-hdr">
+        <h2 style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:8px;background:rgba(245,166,35,0.15);color:var(--amber);display:inline-flex;align-items:center;justify-content:center;font-size:13px">→</span> Optimise These Ads</h2>
+        <span id="strategy-watch-count" style="font-size:11px;color:var(--amber)"></span>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px">These ads have potential but need some adjustments. Small changes can make a big difference here.</p>
+      <div id="strategy-watch-list"><div class="empty"><div class="empty-icon">→</div><h3>No data</h3><p>Load a report first.</p></div></div>
+    </div>
+
   </div>
 
   <!-- KNOWLEDGE BASE -->
@@ -934,6 +1028,7 @@ const PAGE_META = {
   compare:   ['Compare',       'Side-by-side metric comparison'],
   trends:    ['Trends',        'Period-over-period trajectory'],
   insights:  ['Insights & AI', 'Recommendations & AI analyst'],
+  strategy:  ['Strategy',      '7-day action plan · boost, pause & optimise'],
   knowledge: ['Knowledge Base','Training context for AI analysis'],
   settings:  ['Settings',      'API key & data management'],
 };
@@ -1006,6 +1101,7 @@ const S = {
   charts: {},
   creativeFilter: { tier: 'all', format: 'all' },
   campTab: 'campaigns',
+  insightsTab: 'campaigns',
   pending: { rows: [], mediaFiles: [], excelFile: null, dateStart: '', dateEnd: '' },
   settings: {},
   dateFilter:  { from: '', to: '' },
@@ -1444,6 +1540,7 @@ function goPage(name) {
   if (name === 'compare')   renderCompare();
   if (name === 'trends')    renderTrends();
   if (name === 'insights')  renderInsights();
+  if (name === 'strategy')  renderStrategy();
   if (name === 'knowledge') renderKnowledge();
   if (name === 'settings')  renderSettings();
 }
@@ -2931,6 +3028,20 @@ function adActionLabel(ad) {
   return roasTier(ad.roas).action;
 }
 
+// ── Insights tabs ────────────────────────────────────
+function setInsightsTab(tab) {
+  S.insightsTab = tab;
+  ['campaigns','adsets','ads'].forEach(t => {
+    const btn = document.getElementById('ins-tab-' + t);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  // Show expand/collapse only for Campaign view
+  const isTree = tab === 'campaigns';
+  document.getElementById('ins-expand-btn')?.style  && (document.getElementById('ins-expand-btn').style.display  = isTree ? 'inline-flex' : 'none');
+  document.getElementById('ins-collapse-btn')?.style && (document.getElementById('ins-collapse-btn').style.display = isTree ? 'inline-flex' : 'none');
+  renderInsights();
+}
+
 function renderInsights() {
   const data = filteredRows();
   const treeEl   = document.getElementById('insights-tree');
@@ -2938,6 +3049,7 @@ function renderInsights() {
   const kpiEl    = document.getElementById('insights-kpi-row');
   const filterEl = document.getElementById('insights-filter');
   const badgeEl  = document.getElementById('insights-objective-badge');
+  const tab      = S.insightsTab || 'campaigns';
 
   if (!data.length) {
     if (treeEl) treeEl.innerHTML = `<div class="empty"><div class="empty-icon">◈</div><h3>No data loaded</h3><p>Upload an Excel report and select a date range.</p></div>`;
@@ -2948,110 +3060,172 @@ function renderInsights() {
   }
 
   const tierFilter = filterEl?.value || 'all';
+  const searchQ    = (document.getElementById('ins-search')?.value || '').toLowerCase();
+  const sortKey    = document.getElementById('ins-sort')?.value || 'roas';
 
   // Detect dominant objective
-  const engCount  = data.filter(isEngagementCampaign).length;
-  const salesCount = data.length - engCount;
-  const dominantObj = engCount > salesCount ? 'Engagement' : 'Sales';
+  const engCount   = data.filter(isEngagementCampaign).length;
+  const dominantObj = engCount > (data.length - engCount) ? 'Engagement' : 'Sales';
   if (badgeEl) badgeEl.textContent = `${dominantObj} campaigns`;
 
-  // KPI summary row
+  // KPI summary
   const totSpend   = sum(data, 'spend');
   const totRev     = sum(data, 'revenue');
   const blendedRoas = totRev > 0 && totSpend > 0 ? (totRev / totSpend).toFixed(2) : '—';
-  const totImpr    = sum(data, 'impressions');
   const totPurch   = sum(data, 'purchases');
   const salesData  = data.filter(d => !isEngagementCampaign(d));
-  const excellent  = salesData.filter(d => d.roas >= 5).length;
-  const good       = salesData.filter(d => d.roas >= 3 && d.roas < 5).length;
-  const average    = salesData.filter(d => d.roas >= 2 && d.roas < 3).length;
-  const poor       = salesData.filter(d => d.roas < 2).length;
+  const nExcellent = salesData.filter(d => d.roas >= 5).length;
+  const nGood      = salesData.filter(d => d.roas >= 3 && d.roas < 5).length;
+  const nAverage   = salesData.filter(d => d.roas >= 2 && d.roas < 3).length;
+  const nPoor      = salesData.filter(d => d.roas < 2).length;
 
   if (kpiEl) kpiEl.innerHTML = [
-    { label: 'Total Spend',    value: `${S.currency}${fmtNum(totSpend)}`,   cls: '' },
-    { label: 'Total Revenue',  value: `${S.currency}${fmtNum(totRev)}`,     cls: '' },
-    { label: 'Blended ROAS',   value: blendedRoas !== '—' ? blendedRoas + 'x' : '—', cls: '' },
-    { label: 'Total Purchases',value: fmtNum(totPurch),                     cls: '' },
-    { label: 'Total Ads',      value: data.length,                          cls: '' },
+    { label: 'Total Spend',    value: `${S.currency}${fmtNum(totSpend)}` },
+    { label: 'Total Revenue',  value: `${S.currency}${fmtNum(totRev)}`   },
+    { label: 'Blended ROAS',   value: blendedRoas !== '—' ? blendedRoas + 'x' : '—' },
+    { label: 'Total Purchases',value: fmtNum(totPurch)  },
+    { label: 'Total Ads',      value: data.length        },
   ].map(k => `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div></div>`).join('');
 
-  // Tier overview bars
+  // Tier bars
   if (tierEl && salesData.length) {
     const total = salesData.length;
-    const tiers = [
-      { key: 'excellent', label: 'Excellent ≥5x', count: excellent, cls: 'excellent', action: 'Push Budget' },
-      { key: 'good',      label: 'Good 3–5x',     count: good,      cls: 'good',      action: 'Maintain'    },
-      { key: 'average',   label: 'Average 2–3x',  count: average,   cls: 'average',   action: 'Optimise'    },
-      { key: 'poor',      label: 'Poor <2x',       count: poor,      cls: 'poor',      action: 'Pause/Rework'},
-    ];
-    tierEl.innerHTML = tiers.map(t => `
+    tierEl.innerHTML = [
+      { key:'excellent', label:'Excellent ≥5x', count:nExcellent, cls:'excellent', action:'Push Budget' },
+      { key:'good',      label:'Good 3–5x',     count:nGood,      cls:'good',      action:'Maintain'   },
+      { key:'average',   label:'Average 2–3x',  count:nAverage,   cls:'average',   action:'Optimise'   },
+      { key:'poor',      label:'Poor <2x',       count:nPoor,      cls:'poor',      action:'Pause/Rework'},
+    ].map(t => `
       <div class="ins-tier-bar">
         <span class="ins-tier-label tier-${t.cls}">${t.label}</span>
-        <div class="ins-tier-track"><div class="ins-tier-fill tier-fill-${t.cls}" style="width:${total>0?Math.round((t.count/total)*100):0}%"></div></div>
-        <span class="ins-tier-stats">${t.count} ad${t.count!==1?'s':''} · ${total>0?Math.round((t.count/total)*100):0}% · <strong>${t.action}</strong></span>
+        <div class="ins-tier-track"><div class="ins-tier-fill tier-fill-${t.cls}" style="width:${Math.round((t.count/total)*100)}%"></div></div>
+        <span class="ins-tier-stats">${t.count} ad${t.count!==1?'s':''} · ${Math.round((t.count/total)*100)}% · <strong>${t.action}</strong></span>
       </div>`).join('');
   } else if (tierEl) {
     tierEl.innerHTML = `<p style="font-size:11px;color:var(--text3)">Engagement campaign — analysis based on engagement metrics.</p>`;
   }
 
-  // Build campaign→adset→ad hierarchy
-  const campMap = new Map();
-  data.forEach(ad => {
-    if (!campMap.has(ad.campaignName)) campMap.set(ad.campaignName, new Map());
-    const adsetMap = campMap.get(ad.campaignName);
-    if (!adsetMap.has(ad.adsetName)) adsetMap.set(ad.adsetName, []);
-    adsetMap.get(ad.adsetName).push(ad);
-  });
-
-  // Apply tier filter
-  const matchesTier = (ad) => {
+  // Apply tier + search filter
+  const matchesTier = ad => {
     if (tierFilter === 'all') return true;
-    if (isEngagementCampaign(ad)) return tierFilter === 'all';
-    const t = roasTier(ad.roas).key;
-    return t === tierFilter;
+    if (isEngagementCampaign(ad)) return false;
+    return roasTier(ad.roas).key === tierFilter;
+  };
+  const matchesSearch = ad =>
+    !searchQ ||
+    ad.adName.toLowerCase().includes(searchQ) ||
+    ad.campaignName.toLowerCase().includes(searchQ) ||
+    ad.adsetName.toLowerCase().includes(searchQ);
+
+  const sortFn = (a, b) => {
+    if (sortKey === 'roas')        return b.roas - a.roas;
+    if (sortKey === 'spend')       return b.spend - a.spend;
+    if (sortKey === 'purchases')   return b.purchases - a.purchases;
+    if (sortKey === 'ctr')         return b.ctr - a.ctr;
+    if (sortKey === 'impressions') return b.impressions - a.impressions;
+    return 0;
   };
 
-  let treeHtml = '';
-  let campIdx = 0;
-  for (const [campName, adsetMap] of campMap) {
-    const campAds = [...adsetMap.values()].flat();
-    const filteredCampAds = campAds.filter(matchesTier);
-    if (!filteredCampAds.length && tierFilter !== 'all') continue;
+  // ── Campaign view (hierarchical tree) ───────────────
+  if (tab === 'campaigns') {
+    const campMap = new Map();
+    data.forEach(ad => {
+      if (!campMap.has(ad.campaignName)) campMap.set(ad.campaignName, new Map());
+      const adsetMap = campMap.get(ad.campaignName);
+      if (!adsetMap.has(ad.adsetName)) adsetMap.set(ad.adsetName, []);
+      adsetMap.get(ad.adsetName).push(ad);
+    });
+    let html = '';
+    let campIdx = 0;
+    for (const [campName, adsetMap] of campMap) {
+      const campAds = [...adsetMap.values()].flat();
+      const filtered = campAds.filter(a => matchesTier(a) && matchesSearch(a));
+      if (!filtered.length) { campIdx++; continue; }
+      const campSpend = sum(campAds,'spend'), campRev = sum(campAds,'revenue');
+      const campRoas  = campRev > 0 && campSpend > 0 ? +(campRev/campSpend).toFixed(2) : 0;
+      const campPurch = sum(campAds,'purchases'), campImpr = sum(campAds,'impressions');
+      const isEng     = campAds.some(isEngagementCampaign);
+      const ct        = isEng ? { color:'#38bdf8', label:'Engagement' } : roasTier(campRoas);
+      const issues    = [];
+      const fat = campAds.filter(a => a.frequency >= 3);
+      if (fat.length) issues.push(`${fat.length} ad${fat.length>1?'s':''} with frequency fatigue`);
+      const poorAds = campAds.filter(a => !isEngagementCampaign(a) && a.roas < 2);
+      if (poorAds.length) issues.push(`${poorAds.length} poor-ROAS ad${poorAds.length>1?'s':''} draining budget`);
+      const topAds  = campAds.filter(a => !isEngagementCampaign(a) && a.roas >= 5);
+      if (topAds.length) issues.push(`${topAds.length} excellent ad${topAds.length>1?'s':''} ready to scale`);
+      const cid = `ins-camp-${campIdx++}`;
+      html += `
+        <div class="ins-campaign">
+          <div class="ins-campaign-hdr" onclick="insToggle('${cid}',this)">
+            <span class="ins-caret">▶</span>
+            <span class="camp-name">${escHtml(campName)}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:8px;background:${ct.color}22;color:${ct.color};font-weight:600;margin-right:8px">${isEng ? 'Engagement' : ct.label + ' ' + campRoas + 'x'}</span>
+            <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(campSpend)} · ${fmtNum(campImpr)} impr${campPurch > 0 ? ' · ' + fmtNum(campPurch) + ' purchases' : ''}</span>
+          </div>
+          <div class="ins-campaign-body" id="${cid}">
+            ${issues.length ? `<div style="font-size:11px;color:var(--text2);margin-bottom:10px;padding:8px 10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--accent)">${issues.join(' · ')}</div>` : ''}
+            ${renderAdsetTree(adsetMap, data, a => matchesTier(a) && matchesSearch(a), campIdx)}
+          </div>
+        </div>`;
+    }
+    if (treeEl) treeEl.innerHTML = html || `<div class="empty"><div class="empty-icon">◈</div><h3>No ads match this filter</h3></div>`;
 
-    const campSpend   = sum(campAds, 'spend');
-    const campRev     = sum(campAds, 'revenue');
-    const campRoas    = campRev > 0 && campSpend > 0 ? +(campRev / campSpend).toFixed(2) : 0;
-    const campPurch   = sum(campAds, 'purchases');
-    const isEngCamp   = campAds.some(isEngagementCampaign);
-    const campTier    = isEngCamp ? { color: '#38bdf8', label: 'Engagement' } : roasTier(campRoas);
-    const campImpr    = sum(campAds, 'impressions');
+  // ── Ad Sets view (flat grouped) ─────────────────────
+  } else if (tab === 'adsets') {
+    const adsetMap = new Map();
+    data.forEach(ad => {
+      const key = `${ad.adsetName}|||${ad.campaignName}`;
+      if (!adsetMap.has(key)) adsetMap.set(key, []);
+      adsetMap.get(key).push(ad);
+    });
+    const groups = [...adsetMap.entries()]
+      .map(([key, ads]) => {
+        const [adsetName, campName] = key.split('|||');
+        const sp = sum(ads,'spend'), rv = sum(ads,'revenue');
+        const ro = rv > 0 && sp > 0 ? +(rv/sp).toFixed(2) : 0;
+        return { adsetName, campName, ads, sp, rv, ro, pu: sum(ads,'purchases') };
+      })
+      .filter(g => g.ads.some(a => matchesTier(a) && matchesSearch(a)))
+      .sort((a,b) => sortKey === 'spend' ? b.sp - a.sp : sortKey === 'purchases' ? b.pu - a.pu : b.ro - a.ro);
 
-    // Campaign-level summary
-    const campIssues = [];
-    const fatigued   = campAds.filter(a => a.frequency >= 3 && a.roas < campRoas);
-    if (fatigued.length) campIssues.push(`${fatigued.length} ad${fatigued.length>1?'s':''} showing frequency fatigue`);
-    const poor        = campAds.filter(a => !isEngagementCampaign(a) && a.roas < 2);
-    if (poor.length)  campIssues.push(`${poor.length} poor-ROAS ad${poor.length>1?'s':''} draining budget`);
-    const excellent   = campAds.filter(a => !isEngagementCampaign(a) && a.roas >= 5);
-    if (excellent.length) campIssues.push(`${excellent.length} excellent ad${excellent.length>1?'s':''} ready to scale`);
+    let html = '';
+    groups.forEach((g, i) => {
+      const isEng   = g.ads.some(isEngagementCampaign);
+      const ct      = isEng ? { color:'#38bdf8', label:'Engagement' } : roasTier(g.ro);
+      const sid     = `ins-adset-flat-${i}`;
+      const fAds    = [...g.ads].filter(a => matchesTier(a) && matchesSearch(a)).sort(sortFn);
+      html += `
+        <div class="ins-adset" style="margin-bottom:10px">
+          <div class="ins-adset-hdr" onclick="insToggle('${sid}',this)">
+            <span class="ins-caret">▶</span>
+            <div style="flex:1;min-width:0">
+              <div class="adset-name">${escHtml(g.adsetName)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:1px">${escHtml(g.campName)}</div>
+            </div>
+            <span style="font-size:10px;padding:2px 7px;border-radius:6px;background:${ct.color}22;color:${ct.color};font-weight:600;margin-right:8px">${isEng ? 'Engagement' : ct.label + ' ' + g.ro + 'x'}</span>
+            <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(g.sp)}${g.pu > 0 ? ' · ' + fmtNum(g.pu) + ' conv' : ''} · ${fAds.length} ad${fAds.length!==1?'s':''}</span>
+          </div>
+          <div class="ins-adset-body" id="${sid}">
+            ${fAds.map(ad => renderAdCard(ad, data)).join('')}
+          </div>
+        </div>`;
+    });
+    if (treeEl) treeEl.innerHTML = html || `<div class="empty"><div class="empty-icon">◈</div><h3>No ad sets match this filter</h3></div>`;
 
-    const cid = `camp-${campIdx++}`;
-    treeHtml += `
-      <div class="ins-campaign">
-        <div class="ins-campaign-hdr" onclick="insToggle('${cid}',this)">
-          <span class="ins-caret">▶</span>
-          <span class="camp-name">${escHtml(campName)}</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:8px;background:${campTier.color}22;color:${campTier.color};font-weight:600;margin-right:8px">${isEngCamp ? 'Engagement' : campTier.label + ' ' + campRoas + 'x'}</span>
-          <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(campSpend)} · ${fmtNum(campImpr)} impr${campPurch > 0 ? ' · ' + fmtNum(campPurch) + ' purchases' : ''}</span>
-        </div>
-        <div class="ins-campaign-body" id="${cid}">
-          ${campIssues.length ? `<div style="font-size:11px;color:var(--text2);margin-bottom:10px;padding:8px 10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--accent)">${campIssues.join(' · ')}</div>` : ''}
-          ${renderAdsetTree(adsetMap, data, matchesTier, campIdx)}
-        </div>
-      </div>`;
+  // ── Ads view (flat list) ─────────────────────────────
+  } else if (tab === 'ads') {
+    const fAds = data
+      .filter(a => matchesTier(a) && matchesSearch(a))
+      .sort(sortFn);
+
+    let html = fAds.length ? `<div style="font-size:11px;color:var(--text3);margin-bottom:12px">${fAds.length} ad${fAds.length!==1?'s':''} · sorted by ${sortKey}</div>` : '';
+    html += fAds.map(ad => {
+      const campBreadcrumb = `<div style="font-size:10px;color:var(--text3);margin-bottom:4px">${escHtml(ad.campaignName)} → ${escHtml(ad.adsetName)}</div>`;
+      return `<div style="margin-bottom:10px">${campBreadcrumb}${renderAdCard(ad, data)}</div>`;
+    }).join('');
+    if (treeEl) treeEl.innerHTML = html || `<div class="empty"><div class="empty-icon">🎯</div><h3>No ads match this filter</h3></div>`;
   }
 
-  if (treeEl) treeEl.innerHTML = treeHtml || `<div class="empty"><div class="empty-icon">◈</div><h3>No ads match this filter</h3></div>`;
   buildInsightCharts(data);
   const modeEl = document.getElementById('ai-mode-label');
   if (modeEl) modeEl.textContent = S.settings.apiKey ? 'Claude API' : 'rule-based';
@@ -3156,6 +3330,327 @@ function insightsCollapseAll() {
 }
 
 function buildInsights(data) { /* legacy — replaced by renderInsights */ }
+
+// ═══════════════════════════════════════════════════
+// STRATEGY ENGINE
+// ═══════════════════════════════════════════════════
+
+function strategyBoostPlan(ad, allData) {
+  const isEng    = isEngagementCampaign(ad);
+  const tier     = isEng ? null : roasTier(ad.roas);
+  const avgCpm   = allData.length ? wavg(allData.filter(d => d.cpm > 0), 'cpm', 'impressions') : 0;
+  const avgRoas  = allData.length ? wavg(allData.filter(d => !isEngagementCampaign(d)), 'roas', 'spend') : 0;
+
+  const why = [];
+  const plan = [];
+
+  if (isEng) {
+    // Engagement campaign boost
+    why.push(`This ad is building strong brand awareness for your audience. ${ad.ctr > 0 ? `It's getting people to click at a rate of <strong>${ad.ctr.toFixed(2)}%</strong>, which shows genuine interest.` : ''}`);
+    if (ad.hookRate !== null && ad.hookRate >= 20) why.push(`People are stopping to watch — <strong>${ad.hookRate}%</strong> hook rate means your opening is grabbing attention.`);
+    if (ad.recallLift > 0) why.push(`An estimated <strong>${fmtNum(ad.recallLift)} people</strong> will remember your brand after seeing this ad. That's valuable long-term.`);
+    plan.push({ days:'Day 1–2', text: `<strong>Increase budget by 20%.</strong> This ad is doing well — more money means more people will see it without hurting performance.` });
+    plan.push({ days:'Day 3–4', text: `<strong>Check your frequency.</strong> ${ad.frequency > 0 ? `It's at ${ad.frequency.toFixed(1)}x right now. ` : ''}If it crosses 3x, duplicate the ad to a new or broader audience so you don't bore the same people.` });
+    plan.push({ days:'Day 5–6', text: `<strong>Test one variation.</strong> Keep this ad running but duplicate it with a slightly different thumbnail or first 3 seconds. Let both run together and see which does better.` });
+    plan.push({ days:'Day 7',   text: `<strong>Review and decide.</strong> If the variation beats this one in CTR or hook rate, shift more budget to it. If not, keep this one and push budget another 15%.` });
+  } else if (tier.key === 'excellent') {
+    why.push(`This ad is your <strong>top performer</strong> — it's returning <strong>${ad.roas.toFixed(2)}x ROAS</strong>. For every ₹1 you spend, you're getting ₹${ad.roas.toFixed(2)} back.`);
+    if (ad.roas > avgRoas * 1.5) why.push(`It's performing <strong>${Math.round(((ad.roas/avgRoas)-1)*100)}% above your account average</strong> — this is a proven winner.`);
+    if (ad.frequency < 2.5)      why.push(`Audience exposure is still fresh at <strong>${ad.frequency.toFixed(1)}x frequency</strong> — plenty of room to scale without fatigue.`);
+    if (ad.cpa > 0)              why.push(`You're acquiring customers at <strong>${S.currency}${fmtNum(ad.cpa)}</strong> per purchase — a very efficient cost.`);
+    plan.push({ days:'Day 1–2', text: `<strong>Increase the budget by 25–30%.</strong> Don't jump too fast — a 30% increase keeps the algorithm stable while delivering more volume.` });
+    plan.push({ days:'Day 3–4', text: `<strong>Monitor frequency and ROAS closely.</strong> ${ad.frequency < 2 ? 'Frequency is still low — audience is fresh, scaling should be smooth.' : `Frequency is at ${ad.frequency.toFixed(1)}x. If it hits 3.5x, add a new Lookalike audience (1–3%) to keep reach expanding.`}` });
+    plan.push({ days:'Day 5',   text: `<strong>Duplicate to a new audience.</strong> Keep the original running. Create a copy targeting a Lookalike based on your best buyers. This protects your current performance while finding new customers.` });
+    plan.push({ days:'Day 6–7', text: `<strong>If ROAS is still above ${(ad.roas * 0.85).toFixed(1)}x, increase budget by another 20%.</strong> At this point you have proof the ad can scale. Push it further.` });
+  } else {
+    // Good ROAS (3–5x)
+    why.push(`This ad is <strong>profitable and consistent</strong> with a ROAS of <strong>${ad.roas.toFixed(2)}x</strong>. It's not your flashiest performer, but it reliably makes money.`);
+    if (ad.addsToCart > 0 && ad.purchases > 0) {
+      const cvr = (ad.purchases / ad.addsToCart * 100).toFixed(0);
+      why.push(`<strong>${cvr}% of people who add to cart are completing the purchase</strong> — the landing page and checkout are working well together with this ad.`);
+    }
+    plan.push({ days:'Day 1–2', text: `<strong>Increase budget by 15%.</strong> A smaller bump here since we're not at "excellent" tier yet — but it deserves more investment to see if it can push to 5x+ ROAS.` });
+    plan.push({ days:'Day 3–4', text: `<strong>Test the headline or main image/video.</strong> Create one variation of this ad with a different hook or CTA button. Run both at the same budget to find if there's an easy improvement.` });
+    plan.push({ days:'Day 5',   text: `<strong>Expand to a broader audience.</strong> ${ad.audienceSeg ? `This is currently targeting "${ad.audienceSeg}". ` : ''}Try a slightly broader interest set or a 2–4% Lookalike. Keep the original audience running too.` });
+    plan.push({ days:'Day 6–7', text: `<strong>Compare the variation.</strong> If the new creative or audience is performing at 4x+ ROAS, start shifting budget to it. If not, keep the original and bump budget another 10%.` });
+  }
+
+  return { why, plan };
+}
+
+function strategyPausePlan(ad, allData) {
+  const isEng  = isEngagementCampaign(ad);
+  const why    = [];
+  const fix    = [];
+
+  if (isEng) {
+    if (ad.ctr < 0.5)  why.push(`Very low click rate at <strong>${ad.ctr.toFixed(2)}%</strong> — people are scrolling past this ad without engaging. The creative isn't stopping the scroll.`);
+    if (ad.hookRate !== null && ad.hookRate < 10) why.push(`Only <strong>${ad.hookRate}%</strong> of viewers watch past the first 3 seconds — the opening isn't grabbing attention.`);
+    if (ad.frequency >= 4) why.push(`The same audience has seen this ad <strong>${ad.frequency.toFixed(1)} times on average</strong> — they're tired of it. Showing it more is just wasting money.`);
+    why.push(`For an engagement campaign, this ad isn't achieving its goal. It should be building awareness and recall, but the numbers show people aren't interested.`);
+    fix.push(`Pause this ad immediately to stop wasting budget.`);
+    fix.push(`Create a fresh version: try a different opening frame, a more relatable scenario, or a trending audio. The first 3 seconds are everything for engagement ads.`);
+    fix.push(`Before relaunching, test the new version with a small budget (${S.currency}300–500/day) for 3–4 days to confirm it performs better.`);
+  } else {
+    const allCpas = allData.filter(r => r.cpa > 0 && !isEngagementCampaign(r)).map(r => r.cpa);
+    const avgCpa  = allCpas.length ? allCpas.reduce((a,b)=>a+b,0)/allCpas.length : 0;
+
+    if (ad.roas === 0) {
+      why.push(`This ad has <strong>zero revenue attributed to it</strong>. You've spent <strong>${S.currency}${fmtNum(ad.spend)}</strong> and got nothing back in measurable sales.`);
+      why.push(`This could be a pixel tracking issue, a broken landing page, or the ad simply isn't convincing anyone to buy.`);
+    } else {
+      why.push(`This ad has a <strong>ROAS of only ${ad.roas.toFixed(2)}x</strong> — meaning for every ₹1 spent, you're getting back just ₹${ad.roas.toFixed(2)}. That's below your break-even point.`);
+      if (ad.spend > 3000) why.push(`You've already spent <strong>${S.currency}${fmtNum(ad.spend)}</strong> on this ad. The longer it runs, the more money is lost.`);
+    }
+
+    if (ad.ctr < 0.5) why.push(`The click-through rate is very low at <strong>${ad.ctr.toFixed(2)}%</strong> — most people see the ad but don't feel compelled to click. The message or visual isn't resonating.`);
+    if (ad.frequency >= 3.5) why.push(`Your audience has seen this ad <strong>${ad.frequency.toFixed(1)} times</strong>. Repetition isn't helping — they've already decided they're not interested.`);
+    if (ad.hookRate !== null && ad.hookRate < 15) why.push(`Only <strong>${ad.hookRate}%</strong> hook rate — people are scrolling past without even watching. The ad fails to stop the scroll.`);
+    if (ad.addsToCart > 0 && ad.purchases === 0) why.push(`<strong>${fmtNum(ad.addsToCart)} people added to cart but no one completed the purchase</strong> — something in the checkout or product page is causing people to abandon.`);
+    if (avgCpa > 0 && ad.cpa > avgCpa * 1.5) why.push(`Each customer acquired through this ad costs <strong>${S.currency}${fmtNum(ad.cpa)}</strong> — that's ${Math.round(((ad.cpa/avgCpa)-1)*100)}% more expensive than your average.`);
+
+    fix.push(`<strong>Pause this ad now</strong> to stop the budget loss.`);
+    if (ad.roas === 0 && ad.spend > 1000) fix.push(`Check your Meta pixel — visit the landing page and confirm purchase events are firing correctly in Meta Events Manager.`);
+    fix.push(`Redirect this ad's budget to your best-performing ads (ROAS 3x+) immediately. They'll put the money to better use.`);
+    if (ad.ctr < 0.5) fix.push(`If you want to retry this ad: change the main image or first 3 seconds of video completely. The current visual isn't working.`);
+    if (ad.addsToCart > 0 && ad.purchases === 0) fix.push(`Fix the checkout experience first before retesting this ad — the issue may not be the ad itself but the website.`);
+    fix.push(`Wait at least 7 days before relaunching any variation. Let other ads gather data first so you have a proper benchmark.`);
+  }
+
+  return { why, fix };
+}
+
+function renderStrategy() {
+  const data = filteredRows();
+
+  const summaryEl = document.getElementById('strategy-summary-bar');
+  const boostEl   = document.getElementById('strategy-boost-list');
+  const pauseEl   = document.getElementById('strategy-pause-list');
+  const watchEl   = document.getElementById('strategy-watch-list');
+  const boostCnt  = document.getElementById('strategy-boost-count');
+  const pauseCnt  = document.getElementById('strategy-pause-count');
+  const watchCnt  = document.getElementById('strategy-watch-count');
+
+  if (!data.length) {
+    const empty = `<div class="empty"><div class="empty-icon">🎯</div><h3>No data loaded</h3><p>Upload an Excel report first.</p></div>`;
+    if (boostEl) boostEl.innerHTML = empty;
+    if (pauseEl) pauseEl.innerHTML = empty;
+    if (watchEl) watchEl.innerHTML = empty;
+    if (summaryEl) summaryEl.innerHTML = '';
+    return;
+  }
+
+  const salesAds = data.filter(d => !isEngagementCampaign(d));
+  const engAds   = data.filter(d => isEngagementCampaign(d));
+
+  // Categorise
+  const boostAds  = [
+    ...salesAds.filter(d => d.roas >= 3).sort((a,b) => b.roas - a.roas),
+    ...engAds.filter(d => d.ctr >= 1 && (d.hookRate === null || d.hookRate >= 18)).sort((a,b) => b.ctr - a.ctr),
+  ];
+  const pauseAds  = [
+    ...salesAds.filter(d => d.roas < 2 && d.spend > 500).sort((a,b) => b.spend - a.spend),
+    ...engAds.filter(d => d.ctr < 0.5 || (d.hookRate !== null && d.hookRate < 10)).sort((a,b) => a.ctr - b.ctr),
+  ];
+  const watchAds  = salesAds.filter(d => d.roas >= 2 && d.roas < 3).sort((a,b) => b.roas - a.roas);
+
+  const totSpend   = sum(data, 'spend');
+  const boostSpend = sum(boostAds, 'spend');
+  const pauseSpend = sum(pauseAds, 'spend');
+
+  // Summary bar
+  if (summaryEl) summaryEl.innerHTML = `
+    <div class="strat-summary-grid">
+      <div class="strat-summary-cell">
+        <div class="strat-summary-num" style="color:var(--green)">${boostAds.length}</div>
+        <div class="strat-summary-lbl">Ads to Boost</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">${S.currency}${fmtNum(boostSpend)} current spend</div>
+      </div>
+      <div class="strat-summary-cell">
+        <div class="strat-summary-num" style="color:var(--amber)">${watchAds.length}</div>
+        <div class="strat-summary-lbl">Ads to Optimise</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">ROAS 2–3x, needs work</div>
+      </div>
+      <div class="strat-summary-cell">
+        <div class="strat-summary-num" style="color:var(--red)">${pauseAds.length}</div>
+        <div class="strat-summary-lbl">Ads to Pause</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">${S.currency}${fmtNum(pauseSpend)} being wasted</div>
+      </div>
+    </div>`;
+
+  if (boostCnt) boostCnt.textContent = `${boostAds.length} ad${boostAds.length!==1?'s':''}`;
+  if (pauseCnt) pauseCnt.textContent = `${pauseAds.length} ad${pauseAds.length!==1?'s':''}`;
+  if (watchCnt) watchCnt.textContent = `${watchAds.length} ad${watchAds.length!==1?'s':''}`;
+
+  // ── Boost cards ──────────────────────────────────────
+  if (boostEl) {
+    if (!boostAds.length) {
+      boostEl.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:12px 0">No ads currently qualify for boosting in this date range.</div>`;
+    } else {
+      boostEl.innerHTML = boostAds.map((ad, i) => {
+        const { why, plan } = strategyBoostPlan(ad, data);
+        const isEng  = isEngagementCampaign(ad);
+        const tier   = isEng ? { color:'#38bdf8', label:'Engagement' } : roasTier(ad.roas);
+        const bid    = `strat-boost-${i}`;
+        const metrics = buildStratMetrics(ad, isEng);
+        return `
+          <div class="strat-card">
+            <div class="strat-card-hdr" onclick="stratToggle('${bid}',this)">
+              <div class="strat-card-icon" style="background:${tier.color}22;color:${tier.color}">↑</div>
+              <div class="strat-card-hdr-text">
+                <div class="strat-card-title">${escHtml(ad.adName)}</div>
+                <div class="strat-card-subtitle">${escHtml(ad.campaignName)} → ${escHtml(ad.adsetName)}</div>
+              </div>
+              <div class="strat-card-right">
+                <span class="strat-badge strat-badge-boost">${isEng ? 'Engagement' : tier.label + ' · ' + ad.roas.toFixed(2) + 'x'}</span>
+                <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(ad.spend)} spent</span>
+              </div>
+              <span class="strat-caret" style="margin-left:10px">▶</span>
+            </div>
+            <div class="strat-card-body" id="${bid}">
+              <div class="strat-section">
+                <div class="strat-section-title">Why boost this ad?</div>
+                <div class="strat-metric-row">${metrics}</div>
+                <div class="strat-why">${why.map(w => `<p style="margin-bottom:6px">${w}</p>`).join('')}</div>
+              </div>
+              <div class="strat-section">
+                <div class="strat-section-title">7-Day Action Plan</div>
+                <div class="strat-day-list">
+                  ${plan.map(p => `<div class="strat-day"><span class="strat-day-label">${p.days}</span><div class="strat-day-text">${p.text}</div></div>`).join('')}
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Pause cards ──────────────────────────────────────
+  if (pauseEl) {
+    if (!pauseAds.length) {
+      pauseEl.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:12px 0">No ads currently qualify for pausing — good job!</div>`;
+    } else {
+      pauseEl.innerHTML = pauseAds.map((ad, i) => {
+        const { why, fix } = strategyPausePlan(ad, data);
+        const isEng   = isEngagementCampaign(ad);
+        const pid     = `strat-pause-${i}`;
+        const metrics = buildStratMetrics(ad, isEng);
+        return `
+          <div class="strat-card">
+            <div class="strat-card-hdr" onclick="stratToggle('${pid}',this)">
+              <div class="strat-card-icon" style="background:rgba(240,79,95,0.15);color:var(--red)">✕</div>
+              <div class="strat-card-hdr-text">
+                <div class="strat-card-title">${escHtml(ad.adName)}</div>
+                <div class="strat-card-subtitle">${escHtml(ad.campaignName)} → ${escHtml(ad.adsetName)}</div>
+              </div>
+              <div class="strat-card-right">
+                <span class="strat-badge strat-badge-pause">${isEng ? 'Low Engagement' : 'ROAS ' + ad.roas.toFixed(2) + 'x'}</span>
+                <span style="font-size:11px;color:var(--red)">${S.currency}${fmtNum(ad.spend)} wasted</span>
+              </div>
+              <span class="strat-caret" style="margin-left:10px">▶</span>
+            </div>
+            <div class="strat-card-body" id="${pid}">
+              <div class="strat-section">
+                <div class="strat-section-title">Why pause this ad?</div>
+                <div class="strat-metric-row">${metrics}</div>
+                <div class="strat-why">${why.map(w => `<p style="margin-bottom:6px">${w}</p>`).join('')}</div>
+              </div>
+              <div class="strat-section">
+                <div class="strat-section-title">What to do next</div>
+                <ul class="ins-points" style="padding-left:0;margin:0">
+                  ${fix.map(f => `<li class="info" style="margin-bottom:6px;font-size:12px">${f}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Optimise cards ───────────────────────────────────
+  if (watchEl) {
+    if (!watchAds.length) {
+      watchEl.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:12px 0">No average-ROAS ads in this date range.</div>`;
+    } else {
+      watchEl.innerHTML = watchAds.map((ad, i) => {
+        const wid     = `strat-watch-${i}`;
+        const metrics = buildStratMetrics(ad, false);
+        const tips    = strategyOptimiseTips(ad, data);
+        return `
+          <div class="strat-card">
+            <div class="strat-card-hdr" onclick="stratToggle('${wid}',this)">
+              <div class="strat-card-icon" style="background:rgba(245,166,35,0.15);color:var(--amber)">→</div>
+              <div class="strat-card-hdr-text">
+                <div class="strat-card-title">${escHtml(ad.adName)}</div>
+                <div class="strat-card-subtitle">${escHtml(ad.campaignName)} → ${escHtml(ad.adsetName)}</div>
+              </div>
+              <div class="strat-card-right">
+                <span class="strat-badge strat-badge-watch">Average · ${ad.roas.toFixed(2)}x ROAS</span>
+                <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(ad.spend)} spent</span>
+              </div>
+              <span class="strat-caret" style="margin-left:10px">▶</span>
+            </div>
+            <div class="strat-card-body" id="${wid}">
+              <div class="strat-section">
+                <div class="strat-section-title">Current Performance</div>
+                <div class="strat-metric-row">${metrics}</div>
+                <div class="strat-why">
+                  <p>This ad is <strong>marginally profitable</strong> — it's making some returns but not enough to justify heavy investment. With the right tweaks it could move into the "Good" tier.</p>
+                </div>
+              </div>
+              <div class="strat-section">
+                <div class="strat-section-title">What to fix</div>
+                <ul class="ins-points" style="padding-left:0;margin:0">
+                  ${tips.map(t => `<li class="${t.type}" style="margin-bottom:6px;font-size:12px">${t.text}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  }
+}
+
+function strategyOptimiseTips(ad, allData) {
+  const tips = [];
+  if (ad.ctr < 1)    tips.push({ type:'warn', text:`<strong>CTR is ${ad.ctr.toFixed(2)}%</strong> — people aren't clicking. Test a new headline or main image. The offer needs to feel more urgent or exclusive.` });
+  if (ad.frequency >= 2.5) tips.push({ type:'warn', text:`<strong>Frequency ${ad.frequency.toFixed(1)}x</strong> — the same people keep seeing this ad. Expand your audience or add exclusions for recent buyers.` });
+  if (ad.hookRate !== null && ad.hookRate < 20) tips.push({ type:'warn', text:`<strong>Hook rate ${ad.hookRate}%</strong> — the first 3 seconds aren't stopping the scroll. Try starting with a bold statement, a surprising fact, or the product in action.` });
+  if (ad.addsToCart > 0 && ad.purchases > 0) {
+    const cvr = (ad.purchases / ad.addsToCart * 100).toFixed(0);
+    if (cvr < 30) tips.push({ type:'warn', text:`<strong>${cvr}% of add-to-carts complete the purchase.</strong> Cart abandonment is hurting ROAS. Add a retargeting campaign with a discount for people who abandoned.` });
+  }
+  if (ad.cpa > 0) {
+    const allCpas = allData.filter(r => r.cpa > 0 && !isEngagementCampaign(r)).map(r => r.cpa);
+    const avgCpa  = allCpas.length ? allCpas.reduce((a,b)=>a+b,0)/allCpas.length : 0;
+    if (avgCpa > 0 && ad.cpa > avgCpa * 1.2) tips.push({ type:'warn', text:`<strong>CPA is ${S.currency}${fmtNum(ad.cpa)}</strong> — above your account average of ${S.currency}${fmtNum(avgCpa)}. Try a different audience segment or creative angle to bring acquisition cost down.` });
+  }
+  if (ad.cpm > 250) tips.push({ type:'info', text:`<strong>CPM is ${S.currency}${fmtNum(ad.cpm)}</strong> — your audience is expensive to reach. Try broadening the targeting or switching to automatic placements to find cheaper impressions.` });
+  if (!tips.length)  tips.push({ type:'info', text:`This ad needs <strong>A/B testing</strong> — run two variations simultaneously with different creatives or audiences. Even a small improvement in CTR or hook rate can push ROAS to 3x+.` });
+  return tips;
+}
+
+function buildStratMetrics(ad, isEng) {
+  const m = [];
+  if (!isEng && ad.roas > 0) m.push({ label:`ROAS ${ad.roas.toFixed(2)}x`, cls: ad.roas>=5?'good':ad.roas>=3?'good':ad.roas>=2?'warn':'bad' });
+  m.push({ label:`${S.currency}${fmtNum(ad.spend)} spend`, cls:'neu' });
+  if (ad.impressions > 0) m.push({ label:`${fmtNum(ad.impressions)} impressions`, cls:'neu' });
+  if (ad.ctr > 0)         m.push({ label:`CTR ${ad.ctr.toFixed(2)}%`, cls:ad.ctr>=1.5?'good':ad.ctr<0.5?'bad':'warn' });
+  if (ad.frequency > 0)   m.push({ label:`Freq ${ad.frequency.toFixed(1)}x`, cls:ad.frequency>=4?'bad':ad.frequency>=2.5?'warn':'good' });
+  if (ad.hookRate!==null) m.push({ label:`Hook ${ad.hookRate}%`, cls:ad.hookRate>=25?'good':ad.hookRate<15?'bad':'warn' });
+  if (!isEng && ad.purchases > 0) m.push({ label:`${fmtNum(ad.purchases)} purchases`, cls:'good' });
+  if (!isEng && ad.cpa > 0) m.push({ label:`CPA ${S.currency}${fmtNum(ad.cpa)}`, cls:'neu' });
+  if (ad.recallLift > 0)  m.push({ label:`Recall +${fmtNum(ad.recallLift)}`, cls:'good' });
+  if (ad.audienceSeg)     m.push({ label:ad.audienceSeg, cls:'neu' });
+  return m.map(x => `<span class="strat-metric ${x.cls}">${x.label}</span>`).join('');
+}
+
+function stratToggle(id, hdr) {
+  const body = document.getElementById(id);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (hdr) hdr.classList.toggle('open', isOpen);
+}
 
 function buildInsightCharts(data) {
   if (!data.length) { mkChart('topBottomChart', null); mkChart('matrixChart', null); return; }
@@ -3754,7 +4249,7 @@ function updateDateFilterUI() {
 function updateDateFilterBar(pageName) {
   const bar = document.getElementById('date-filter-bar');
   if (!bar) return;
-  const showOn = ['dashboard','campaigns','creatives','compare','insights'];
+  const showOn = ['dashboard','campaigns','creatives','compare','insights','strategy'];
   bar.style.display = showOn.includes(pageName) ? 'flex' : 'none';
   if (showOn.includes(pageName)) updateDateFilterUI();
 }
@@ -3768,6 +4263,7 @@ function rerenderActivePage() {
   if (pg==='creatives') renderCreatives();
   if (pg==='compare')   renderCompare();
   if (pg==='insights')  renderInsights();
+  if (pg==='strategy')  renderStrategy();
 }
 
 // ═══════════════════════════════════════════════════
