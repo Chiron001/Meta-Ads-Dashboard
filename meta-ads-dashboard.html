@@ -9,12 +9,13 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0b0f;--bg2:#111318;--bg3:#1a1d26;--bg4:#222633;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
-  --text:#f0f2f8;--text2:#8b90a8;--text3:#555a72;
-  --accent:#4f6ef7;--accent2:#7c3aed;
-  --green:#22c993;--red:#f04f5f;--amber:#f5a623;--cyan:#38bdf8;
-  --r:12px;--rl:18px;
+  --bg:#080910;--bg2:#0f1116;--bg3:#171a23;--bg4:#1e2230;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --text:#eef0f8;--text2:#878da8;--text3:#4e5370;
+  --accent:#5b7cf7;--accent2:#7c3aed;
+  --green:#1ec98e;--red:#f04f5f;--amber:#f5a623;--cyan:#38bdf8;
+  --r:12px;--rl:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
@@ -25,24 +26,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* Layout */
 .shell{display:flex;min-height:100vh;}
 .sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;}
-.main{flex:1;overflow-x:hidden;}
-.logo{padding:0 22px 22px;border-bottom:1px solid var(--border);margin-bottom:16px;}
-.logo-mark{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;letter-spacing:.02em;}
+.main{flex:1;overflow-x:hidden;min-width:0;}
+.logo{padding:0 22px 24px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.logo-mark{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:.01em;}
 .logo-mark span{color:var(--accent);}
-.logo-sub{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.08em;}
+.logo-sub{font-size:9px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.1em;}
 .nav{flex:1;padding:0 10px;}
-.nav-section{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:14px 12px 6px;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;margin-bottom:1px;user-select:none;}
+.nav-section{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:16px 12px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:12px;color:var(--text2);transition:background .12s,color .12s;margin-bottom:2px;user-select:none;}
 .nav-item:hover{background:var(--bg3);color:var(--text);}
-.nav-item.active{background:rgba(79,110,247,0.15);color:var(--accent);}
+.nav-item.active{background:rgba(91,124,247,0.14);color:var(--accent);font-weight:500;}
 .nav-icon{font-size:13px;width:16px;text-align:center;}
 .sidebar-footer{padding:16px 20px 0;border-top:1px solid var(--border);margin-top:auto;}
 .sidebar-footer p{font-size:10px;color:var(--text3);line-height:1.6;}
 
 /* Topbar */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--bg2);gap:14px;flex-wrap:wrap;}
-.topbar-left h1{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
-.topbar-left h1 span{font-size:12px;color:var(--text3);margin-left:8px;font-family:'DM Sans',sans-serif;font-weight:400;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--bg2);gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:8px;}
+.topbar-left h1{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;}
+.topbar-left h1 span{font-size:11px;color:var(--text3);margin-left:8px;font-family:'DM Sans',sans-serif;font-weight:400;}
 .topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .pill{font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
 .pill:hover,.pill.active{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -56,7 +58,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* Page */
 .page{padding:24px 28px;display:none;}
 .page.active{display:block;}
-.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;margin-bottom:20px;}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;margin-bottom:18px;transition:border-color .15s;}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .section-hdr h2{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;}
 .section-hdr select{font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;}
@@ -76,11 +78,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* KPIs */
 .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:20px;}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
-.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;transition:border-color .15s,box-shadow .15s;}
+.kpi:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(0,0,0,.2);}
+.kpi-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
 .kpi-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;line-height:1;margin-bottom:4px;}
 .kpi-delta{font-size:11px;}
-.kpi-bar{height:2px;background:var(--bg4);border-radius:2px;margin-top:7px;}
+.kpi-bar{height:2px;background:var(--bg4);border-radius:2px;margin-top:8px;}
 .kpi-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),#a78bfa);}
 .delta-up{color:var(--green);}
 .delta-down{color:var(--red);}
@@ -182,6 +185,54 @@ tbody tr:hover td{background:var(--bg3);}
 .tag-gap{background:rgba(56,189,248,0.15);color:var(--cyan);}
 .tag-info{background:rgba(139,144,168,0.15);color:var(--text2);}
 
+/* Insights hierarchy tree */
+.ins-tier-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;margin-bottom:6px;background:var(--bg3);}
+.ins-tier-label{font-size:11px;font-weight:600;min-width:90px;}
+.ins-tier-track{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;}
+.ins-tier-fill{height:100%;border-radius:3px;transition:width .5s;}
+.ins-tier-stats{font-size:11px;color:var(--text3);min-width:130px;text-align:right;}
+.tier-excellent{color:#22c993;}.tier-good{color:#4f6ef7;}.tier-average{color:#f5a623;}.tier-poor{color:#f04f5f;}
+.tier-fill-excellent{background:#22c993;}.tier-fill-good{background:#4f6ef7;}.tier-fill-average{background:#f5a623;}.tier-fill-poor{background:#f04f5f;}
+
+.ins-campaign{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+.ins-campaign-hdr{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--bg3);cursor:pointer;user-select:none;transition:background .15s;}
+.ins-campaign-hdr:hover{background:var(--bg4);}
+.ins-campaign-hdr .camp-name{flex:1;font-size:13px;font-weight:600;color:var(--text);}
+.ins-campaign-body{display:none;padding:12px 14px;background:var(--bg2);}
+.ins-campaign-body.open{display:block;}
+
+.ins-adset{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.ins-adset-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--bg3);cursor:pointer;user-select:none;}
+.ins-adset-hdr:hover{background:var(--bg4);}
+.ins-adset-hdr .adset-name{flex:1;font-size:12px;font-weight:500;color:var(--text);}
+.ins-adset-body{display:none;padding:10px 12px;background:var(--bg2);}
+.ins-adset-body.open{display:block;}
+
+.ins-ad{display:flex;gap:12px;padding:10px 12px;border-radius:10px;background:var(--bg3);margin-bottom:8px;align-items:flex-start;}
+.ins-ad-tier{width:8px;border-radius:4px;align-self:stretch;flex-shrink:0;}
+.ins-ad-content{flex:1;min-width:0;}
+.ins-ad-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ins-ad-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.ins-metric-chip{font-size:10px;padding:2px 8px;border-radius:6px;background:var(--bg4);color:var(--text2);}
+.ins-metric-chip.good{background:rgba(34,201,147,0.12);color:var(--green);}
+.ins-metric-chip.bad{background:rgba(240,79,95,0.12);color:var(--red);}
+.ins-metric-chip.warn{background:rgba(245,166,35,0.12);color:var(--amber);}
+.ins-points{list-style:none;margin:0;padding:0;}
+.ins-points li{font-size:11px;color:var(--text2);line-height:1.6;padding-left:14px;position:relative;margin-bottom:2px;}
+.ins-points li::before{content:'•';position:absolute;left:0;}
+.ins-points li.good::before{content:'↑';color:var(--green);}
+.ins-points li.bad::before{content:'↓';color:var(--red);}
+.ins-points li.warn::before{content:'⚠';color:var(--amber);}
+.ins-points li.info::before{content:'→';color:var(--accent);}
+.ins-summary{font-size:11px;color:var(--text3);border-top:1px solid var(--border);margin-top:10px;padding-top:10px;line-height:1.7;}
+.ins-action{display:inline-block;margin-top:6px;font-size:10px;font-weight:600;padding:3px 10px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em;}
+.ins-action.scale{background:rgba(34,201,147,0.15);color:var(--green);}
+.ins-action.maintain{background:rgba(79,110,247,0.15);color:var(--accent);}
+.ins-action.optimize{background:rgba(245,166,35,0.15);color:var(--amber);}
+.ins-action.pause{background:rgba(240,79,95,0.15);color:var(--red);}
+.ins-caret{font-size:10px;color:var(--text3);transition:transform .2s;}
+.ins-campaign-hdr.open .ins-caret,.ins-adset-hdr.open .ins-caret{transform:rotate(90deg);}
+
 /* AI Chat */
 .chat-wrap{display:flex;flex-direction:column;height:340px;}
 .chat-messages{flex:1;overflow-y:auto;padding:4px 0;margin-bottom:12px;}
@@ -280,12 +331,38 @@ textarea.form-input{resize:vertical;min-height:80px;}
 .bench-table td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text2);}
 .bench-table tr:last-child td{border-bottom:none;}
 
-@media(max-width:900px){
-  .sidebar{display:none;}
+/* Hamburger button (hidden on desktop) */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--text2);font-size:18px;line-height:1;margin-right:4px;}
+.hamburger:hover{background:var(--bg3);color:var(--text);}
+
+/* Sidebar overlay backdrop */
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99;}
+.sidebar-backdrop.visible{display:block;}
+
+/* Mobile sidebar overlay */
+@media(max-width:768px){
+  .hamburger{display:flex;align-items:center;justify-content:center;}
+  .sidebar{
+    position:fixed;left:-240px;top:0;bottom:0;z-index:100;
+    width:220px;transition:left .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:none;
+  }
+  .sidebar.mobile-open{left:0;box-shadow:4px 0 24px rgba(0,0,0,.5);}
+  .shell{flex-direction:column;}
+  .main{width:100%;}
   .kpi-row{grid-template-columns:repeat(2,1fr);}
   .upload-grid,.two-col,.three-col{grid-template-columns:1fr;}
-  .page{padding:16px 14px;}
-  .topbar{padding:12px 14px;}
+  .page{padding:14px 12px;}
+  .topbar{padding:10px 12px;gap:8px;}
+  .topbar-left h1{font-size:15px;}
+  .topbar-right{gap:6px;}
+  .ins-ad-metrics{gap:4px;}
+  .ins-metric-chip{font-size:9px;padding:1px 5px;}
+  .ins-campaign-hdr,.ins-adset-hdr{padding:10px 12px;}
+  .camp-name,.adset-name{font-size:11px;}
+  table{font-size:11px;}
+  thead th,tbody td{padding:6px 7px;}
+  .panel{padding:14px 14px;}
 }
 
 /* Creative Library */
@@ -345,9 +422,15 @@ textarea.form-input{resize:vertical;min-height:80px;}
   <div class="sidebar-footer"><p id="db-status">Initialising…</p></div>
 </div>
 
+<!-- Mobile sidebar backdrop -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
+
 <div class="main">
   <div class="topbar">
-    <div class="topbar-left"><h1 id="page-title">Upload <span id="page-sub">Load creatives & performance data</span></h1></div>
+    <div class="topbar-left" style="display:flex;align-items:center;gap:4px">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Menu">☰</button>
+      <h1 id="page-title">Upload <span id="page-sub">Load creatives & performance data</span></h1>
+    </div>
     <div class="topbar-right" id="topbar-actions" style="display:none">
       <div id="report-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
       <button class="btn btn-primary btn-sm" onclick="exportReport()">Export ↓</button>
@@ -407,45 +490,6 @@ textarea.form-input{resize:vertical;min-height:80px;}
         <div class="dz-title">Performance Report</div>
         <div class="dz-sub">Meta Ads Manager export<br>.xlsx or .csv — any date range</div>
         <div id="badge-excel" class="dz-badge" style="display:none"></div>
-      </div>
-    </div>
-
-    <!-- META API FETCH PANEL -->
-    <div class="panel" id="meta-api-panel" style="margin-bottom:20px">
-      <div class="section-hdr">
-        <h2>Connect Meta Ads API</h2>
-        <span id="meta-api-status" style="font-size:11px;color:var(--text3)">Not configured</span>
-      </div>
-      <div id="meta-api-unconfigured">
-        <p style="font-size:12px;color:var(--text2);margin-bottom:6px">Pull live data directly from your Meta Ads account — no manual Excel export needed.</p>
-        <p style="font-size:11px;color:var(--text3)">Go to <span onclick="navigate('settings')" style="color:var(--accent);cursor:pointer;text-decoration:underline">Settings → Meta API</span> to enter your credentials, then come back here to fetch.</p>
-      </div>
-      <div id="meta-api-configured" style="display:none">
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-          <select id="meta-date-preset" onchange="toggleMetaCustomDates()" style="font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'DM Sans',sans-serif">
-            <option value="last_7_d">Last 7 days</option>
-            <option value="last_14_d">Last 14 days</option>
-            <option value="last_30_d" selected>Last 30 days</option>
-            <option value="last_60_d">Last 60 days</option>
-            <option value="last_90_d">Last 90 days</option>
-            <option value="this_month">This month</option>
-            <option value="last_month">Last month</option>
-            <option value="custom">Custom range…</option>
-          </select>
-          <div id="meta-custom-dates" style="display:none;gap:8px;align-items:center">
-            <input type="date" id="meta-from" class="date-input">
-            <span style="color:var(--text3)">→</span>
-            <input type="date" id="meta-to" class="date-input">
-          </div>
-          <button class="btn btn-primary btn-sm" id="meta-fetch-btn" onclick="fetchFromMeta()">↓ Fetch from Meta</button>
-          <span id="meta-fetch-status" style="font-size:11px;color:var(--text3)"></span>
-        </div>
-        <div id="meta-fetch-progress" style="display:none;margin-top:8px">
-          <div style="height:3px;background:var(--bg4);border-radius:2px;margin-bottom:6px">
-            <div id="meta-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:2px;width:0%;transition:width .4s"></div>
-          </div>
-          <div id="meta-progress-text" style="font-size:11px;color:var(--text3)"></div>
-        </div>
       </div>
     </div>
 
@@ -697,28 +741,52 @@ textarea.form-input{resize:vertical;min-height:80px;}
 
   <!-- INSIGHTS + AI -->
   <div id="page-insights" class="page">
-    <div class="two-col" style="margin-bottom:20px">
-      <div class="panel">
-        <div class="section-hdr"><h2>Recommendations</h2>
-          <select id="insights-report" onchange="renderInsights()"><option value="">Select report…</option></select>
+    <!-- Summary KPIs -->
+    <div id="insights-kpi-row" class="kpi-row" style="margin-bottom:20px"></div>
+
+    <!-- Tier overview -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-hdr">
+        <h2>ROAS Tier Overview</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="insights-objective-badge" style="font-size:10px;padding:3px 10px;border-radius:10px;background:rgba(79,110,247,0.15);color:var(--accent)"></span>
+          <select id="insights-filter" onchange="renderInsights()" style="font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2)">
+            <option value="all">All Tiers</option>
+            <option value="excellent">Excellent (ROAS &gt;5)</option>
+            <option value="good">Good (ROAS &gt;3)</option>
+            <option value="average">Average (ROAS 2–3)</option>
+            <option value="poor">Poor (ROAS &lt;2)</option>
+          </select>
         </div>
-        <div id="insights-list"><div class="empty"><div class="empty-icon">◈</div><h3>Select a report</h3></div></div>
       </div>
-      <div class="panel">
-        <div class="section-hdr"><h2>Gap analysis</h2></div>
-        <div id="gap-list"><div class="empty"><div class="empty-icon">✓</div><h3>No analysis yet</h3></div></div>
-      </div>
+      <div id="insights-tier-bars"></div>
     </div>
+
+    <!-- Hierarchy tree -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-hdr">
+        <h2>Campaign → Ad Set → Ad Analysis</h2>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="insightsExpandAll()">Expand all</button>
+          <button class="btn btn-ghost btn-sm" onclick="insightsCollapseAll()">Collapse all</button>
+        </div>
+      </div>
+      <div id="insights-tree"><div class="empty"><div class="empty-icon">◈</div><h3>No data loaded</h3><p>Upload an Excel report and select a date range.</p></div></div>
+    </div>
+
+    <!-- Charts row -->
     <div class="two-col" style="margin-bottom:20px">
       <div class="panel">
-        <div class="section-hdr"><h2>Top vs bottom</h2></div>
+        <div class="section-hdr"><h2>Top vs Bottom Performers</h2><span style="font-size:10px;color:var(--text3)">by ROAS</span></div>
         <div class="chart-wrap" style="height:220px"><canvas id="topBottomChart"></canvas></div>
       </div>
       <div class="panel">
-        <div class="section-hdr"><h2>Spend efficiency matrix</h2></div>
+        <div class="section-hdr"><h2>Spend Efficiency Matrix</h2><span style="font-size:10px;color:var(--text3)">spend vs ROAS</span></div>
         <div class="chart-wrap" style="height:220px"><canvas id="matrixChart"></canvas></div>
       </div>
     </div>
+
+    <!-- AI chat -->
     <div class="panel">
       <div class="section-hdr"><h2>AI Analyst</h2>
         <span style="font-size:10px;color:var(--text3)" id="ai-mode-label">rule-based</span>
@@ -799,44 +867,6 @@ textarea.form-input{resize:vertical;min-height:80px;}
   <!-- SETTINGS -->
   <div id="page-settings" class="page">
 
-    <!-- META API CREDENTIALS -->
-    <div class="panel" style="margin-bottom:20px">
-      <div class="section-hdr"><h2>Meta Ads API</h2><span id="meta-settings-status" style="font-size:11px;color:var(--text3)"></span></div>
-      <div class="settings-form">
-        <div class="form-row">
-          <label class="form-label">Ad Account ID</label>
-          <input id="st-meta-account" class="form-input" placeholder="1234567890  (without act_ prefix)">
-          <span class="form-hint">Find in Ads Manager URL — the number after <code>?act=</code>. e.g. business.facebook.com/adsmanager/…<strong>?act=1234567890</strong></span>
-        </div>
-        <div class="form-row">
-          <label class="form-label">Access Token</label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input id="st-meta-token" type="password" class="form-input" placeholder="EAAxxxxxxxxxxxxxxxx…" style="flex:1">
-            <button class="btn btn-ghost btn-sm" onclick="toggleMetaTokenVisibility()" id="meta-token-toggle" style="white-space:nowrap">Show</button>
-          </div>
-          <span class="form-hint">
-            Get from <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a>:
-            select your app → click <em>Generate Access Token</em> → add <code>ads_read</code> permission.
-            For permanent access, create a <strong>System User</strong> token in Meta Business Manager (never expires).
-            Tokens are stored only in your browser.
-          </span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" onclick="saveMetaSettings()">Save credentials</button>
-          <button id="test-meta-btn" class="btn btn-ghost btn-sm" onclick="testMetaConnection()">Test connection</button>
-          <span id="meta-test-result" style="font-size:11px;color:var(--text3)"></span>
-        </div>
-        <div style="margin-top:14px;padding:12px 14px;background:var(--bg3);border-radius:var(--r);font-size:11px;color:var(--text3);line-height:1.7">
-          <strong style="color:var(--text2)">Step-by-step:</strong><br>
-          1. Go to <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--accent)">developers.facebook.com/apps</a> → Create a free app (type: <em>Other → Business</em>).<br>
-          2. Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a> → select your app → click <em>Generate Access Token</em>.<br>
-          3. Add permission <code>ads_read</code> → copy the token above.<br>
-          4. For long-lived tokens: in Business Manager → System Users → Add System User → Generate Token with <code>ads_read</code>.<br>
-          <strong style="color:var(--green)">Meta explicitly allows read-only data access</strong> for your own ad accounts — no App Review required.
-        </div>
-      </div>
-    </div>
-
     <div class="two-col" style="margin-bottom:20px">
       <div class="panel">
         <div class="section-hdr"><h2>AI Configuration</h2></div>
@@ -913,6 +943,9 @@ const COL = {
   campaign_name:['campaign name','campaign'],
   adset_name:   ['ad set name','ad set','adset name','adset'],
   delivery_lvl: ['delivery level'],
+  objective:    ['objective'],
+  perf_goal:    ['performance goal'],
+  audience_seg: ['audience segments','audience segment'],
   impressions:  ['impressions','impr'],
   reach:        ['reach'],
   frequency:    ['frequency','freq'],
@@ -922,17 +955,35 @@ const COL = {
   ctr:          ['ctr (link click-through rate)','ctr (all)','ctr (link)','link ctr','ctr'],
   cpm:          ['cpm (cost per 1,000 impressions)','cpm (cost per 1000 impressions)','cpm'],
   cpc:          ['cpc (cost per link click)','cpc (link)','cpc'],
+  video_plays:  ['video plays'],
+  video_2s:     ['2-second continuous video plays','2-second video plays'],
   video_3s:     ['3-second video views','3 second video views','3s video views'],
-  thruplay:     ['thru plays','thruplays','thruplay','video plays at 100%'],
   video_25:     ['video plays at 25%'],
   video_50:     ['video plays at 50%'],
   video_75:     ['video plays at 75%'],
+  video_95:     ['video plays at 95%'],
+  thruplay:     ['thru plays','thruplays','thruplay','video plays at 100%'],
+  video_avg_pt: ['video average play time','avg. play time'],
   purchases:    ['purchases','purchase','results','conversions','conv','leads'],
   adds_to_cart: ['adds to cart','add to cart','atc'],
   revenue:      ['purchases conversion value','conversion value','purchase value','revenue'],
   conv_rate:    ['conversion rate'],
   cpa:          ['cost per purchase','cost per result','cost per lead','cost per conversion','cpa','cpl'],
   roas:         ['purchase roas (return on ad spend)','purchase roas','roas','return on ad spend'],
+  aov:          ['aov','average order value'],
+  views:        ['views'],
+  recall_lift:  ['estimated ad recall lift (people)','estimated ad recall lift'],
+  recall_rate:  ['estimated ad recall lift rate'],
+  cost_recall:  ['cost per ad recall lift','cost per estimated ad recall lift'],
+  post_engage:  ['post engagement','post engagements'],
+  cost_engage:  ['cost per post engagement'],
+  campaign_bud: ['campaign budget'],
+  adset_bud:    ['ad set budget','adset budget'],
+  quality_rank: ['quality ranking'],
+  engage_rank:  ['engagement rate ranking'],
+  conv_rank:    ['conversion rate ranking'],
+  headline:     ['headline'],
+  cta_type:     ['call to action type','call_to_action_type','cta type'],
   format:       ['format','ad format','ad_format','ad type','creative format'],
   status:       ['delivery status','status','state','ad status'],
   report_start: ['reporting starts','date start','start date'],
@@ -1050,7 +1101,6 @@ async function loadFromDB() {
   S.currency = S.settings.currency || '₹';
   document.getElementById('db-status').textContent =
     `${S.reports.length} report${S.reports.length !== 1 ? 's' : ''} · ${S.media.size} media · ${S.creatives.size} SKUs`;
-  renderMetaApiPanel();
 }
 
 async function saveReportToDB(report) {
@@ -1140,42 +1190,71 @@ function normaliseRows(rows) {
       return !lvl || lvl === 'ad' || lvl === '';
     })
     .map((row, i) => {
-      const adName      = ns(row, map, 'ad_name', `Creative ${i + 1}`);
+      const adName       = ns(row, map, 'ad_name', `Creative ${i + 1}`);
       const campaignName = ns(row, map, 'campaign_name', 'Unknown Campaign');
-      const adsetName   = ns(row, map, 'adset_name', 'Unknown Ad Set');
-      const impressions = nv(row, map, 'impressions');
-      const reach       = nv(row, map, 'reach');
-      const frequency   = nv(row, map, 'frequency') || (reach > 0 ? +(impressions / reach).toFixed(2) : 0);
-      const spend       = nv(row, map, 'spend');
-      const linkClicks  = nv(row, map, 'link_clicks') || nv(row, map, 'clicks_all');
-      const ctr         = nv(row, map, 'ctr') || (impressions > 0 ? +((linkClicks / impressions) * 100).toFixed(2) : 0);
-      const cpm         = nv(row, map, 'cpm') || (impressions > 0 ? +((spend / impressions) * 1000).toFixed(2) : 0);
-      const cpc         = nv(row, map, 'cpc') || (linkClicks > 0 ? +(spend / linkClicks).toFixed(2) : 0);
-      const video3s     = nv(row, map, 'video_3s');
-      const thruplay    = nv(row, map, 'thruplay');
-      const hookRate    = impressions > 0 && video3s > 0 ? +((video3s / impressions) * 100).toFixed(1) : null;
-      const holdRate    = video3s > 0 && thruplay > 0   ? +((thruplay / video3s) * 100).toFixed(1)    : null;
-      const purchases   = nv(row, map, 'purchases');
-      const addsToCart  = nv(row, map, 'adds_to_cart');
-      const revenue     = nv(row, map, 'revenue');
-      const rawCpa      = nv(row, map, 'cpa');
-      const cpa         = rawCpa > 0 && (spend === 0 || rawCpa <= spend * 10)
+      const adsetName    = ns(row, map, 'adset_name', 'Unknown Ad Set');
+      const objective    = ns(row, map, 'objective', '');
+      const perfGoal     = ns(row, map, 'perf_goal', '');
+      const audienceSeg  = ns(row, map, 'audience_seg', '');
+      const impressions  = nv(row, map, 'impressions');
+      const reach        = nv(row, map, 'reach');
+      const frequency    = nv(row, map, 'frequency') || (reach > 0 ? +(impressions / reach).toFixed(2) : 0);
+      const spend        = nv(row, map, 'spend');
+      const linkClicks   = nv(row, map, 'link_clicks') || nv(row, map, 'clicks_all');
+      const ctr          = nv(row, map, 'ctr') || (impressions > 0 ? +((linkClicks / impressions) * 100).toFixed(2) : 0);
+      const cpm          = nv(row, map, 'cpm') || (impressions > 0 ? +((spend / impressions) * 1000).toFixed(2) : 0);
+      const cpc          = nv(row, map, 'cpc') || (linkClicks > 0 ? +(spend / linkClicks).toFixed(2) : 0);
+      const videoPlays   = nv(row, map, 'video_plays');
+      const video2s      = nv(row, map, 'video_2s');
+      const video3s      = nv(row, map, 'video_3s');
+      const video25      = nv(row, map, 'video_25');
+      const video50      = nv(row, map, 'video_50');
+      const video75      = nv(row, map, 'video_75');
+      const video95      = nv(row, map, 'video_95');
+      const thruplay     = nv(row, map, 'thruplay');
+      const videoAvgPt   = nv(row, map, 'video_avg_pt');
+      const hookRate     = impressions > 0 && video3s > 0 ? +((video3s / impressions) * 100).toFixed(1) : null;
+      const holdRate     = video3s > 0 && thruplay > 0   ? +((thruplay / video3s) * 100).toFixed(1)    : null;
+      const purchases    = nv(row, map, 'purchases');
+      const addsToCart   = nv(row, map, 'adds_to_cart');
+      const revenue      = nv(row, map, 'revenue');
+      const rawCpa       = nv(row, map, 'cpa');
+      const cpa          = rawCpa > 0 && (spend === 0 || rawCpa <= spend * 10)
         ? rawCpa : (purchases > 0 && spend > 0 ? +(spend / purchases).toFixed(2) : 0);
-      const roas        = nv(row, map, 'roas');
-      const format      = ns(row, map, 'format', 'Video');
-      const statusRaw   = ns(row, map, 'status', 'active').toLowerCase();
-      const status      = statusRaw.includes('active') ? 'active'
-                        : statusRaw.includes('learn')  ? 'learning'
-                        : statusRaw.includes('pause')  ? 'paused' : 'active';
-      const tier        = roas >= 4 ? 'top' : roas >= 2 ? 'mid' : 'low';
-      const media       = findMedia(normFile(adName));
-      const rowDate     = ns(row, map, 'row_date', '');
+      const roas         = nv(row, map, 'roas');
+      const aov          = nv(row, map, 'aov') || (purchases > 0 && revenue > 0 ? +(revenue / purchases).toFixed(2) : 0);
+      const views        = nv(row, map, 'views');
+      const recallLift   = nv(row, map, 'recall_lift');
+      const recallRate   = nv(row, map, 'recall_rate');
+      const costRecall   = nv(row, map, 'cost_recall');
+      const postEngage   = nv(row, map, 'post_engage');
+      const costEngage   = nv(row, map, 'cost_engage');
+      const campaignBud  = nv(row, map, 'campaign_bud');
+      const adsetBud     = nv(row, map, 'adset_bud');
+      const qualityRank  = ns(row, map, 'quality_rank', '');
+      const engageRank   = ns(row, map, 'engage_rank', '');
+      const convRank     = ns(row, map, 'conv_rank', '');
+      const headline     = ns(row, map, 'headline', '');
+      const ctaType      = ns(row, map, 'cta_type', '');
+      const format       = ns(row, map, 'format', 'Video');
+      const statusRaw    = ns(row, map, 'status', 'active').toLowerCase();
+      const status       = statusRaw.includes('active') ? 'active'
+                         : statusRaw.includes('learn')  ? 'learning'
+                         : statusRaw.includes('pause')  ? 'paused' : 'active';
+      const tier         = roas >= 4 ? 'top' : roas >= 2 ? 'mid' : 'low';
+      const media        = findMedia(normFile(adName));
+      const rowDate      = ns(row, map, 'row_date', '');
       return {
         adName, campaignName, adsetName,
+        objective, perfGoal, audienceSeg,
         impressions, reach, frequency, spend, linkClicks,
-        ctr, cpm, cpc, video3s, thruplay, hookRate, holdRate,
-        purchases, addsToCart, revenue, cpa, roas,
-        format, status, tier, rowDate,
+        ctr, cpm, cpc,
+        videoPlays, video2s, video3s, video25, video50, video75, video95, thruplay, videoAvgPt,
+        hookRate, holdRate,
+        purchases, addsToCart, revenue, cpa, roas, aov,
+        views, recallLift, recallRate, costRecall, postEngage, costEngage,
+        campaignBud, adsetBud, qualityRank, engageRank, convRank,
+        headline, ctaType, format, status, tier, rowDate,
         url: media?.url || null, mediaType: media?.type || null,
       };
     });
@@ -1330,7 +1409,20 @@ function clearPending() {
 // ═══════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════
+function toggleMobileSidebar() {
+  const sidebar  = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const isOpen   = sidebar.classList.toggle('mobile-open');
+  backdrop.classList.toggle('visible', isOpen);
+}
+
+function closeMobileSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sidebar-backdrop')?.classList.remove('visible');
+}
+
 function goPage(name) {
+  closeMobileSidebar();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1344,7 +1436,6 @@ function goPage(name) {
   document.getElementById('topbar-actions').style.display = showActions ? 'flex' : 'none';
   updateDateFilterBar(name);
   syncReportPills();
-  if (name === 'upload')    renderMetaApiPanel();
   if (name === 'library')   renderLibrary();
   if (name === 'reports')   renderReports();
   if (name === 'dashboard') renderDashboard();
@@ -1356,8 +1447,6 @@ function goPage(name) {
   if (name === 'knowledge') renderKnowledge();
   if (name === 'settings')  renderSettings();
 }
-
-function navigate(name) { goPage(name); }
 
 function syncReportPills() {
   const container = document.getElementById('report-pills');
@@ -2699,139 +2788,377 @@ function renderMomentumTable() {}
 // ═══════════════════════════════════════════════════
 // INSIGHTS + AI ENGINE
 // ═══════════════════════════════════════════════════
-function renderInsights() {
-  const selEl = document.getElementById('insights-report');
-  if (selEl) {
-    selEl.innerHTML = '<option value="">Select report…</option>' +
-      S.reports.map(r => `<option value="${r.id}" ${r.id === S.activeReportId ? 'selected' : ''}>${r.label}</option>`).join('');
+// ═══════════════════════════════════════════════════
+// DEEP ANALYSIS ENGINE
+// ═══════════════════════════════════════════════════
+
+function roasTier(roas) {
+  if (roas >= 5) return { key: 'excellent', label: 'Excellent', action: 'scale',    color: '#22c993' };
+  if (roas >= 3) return { key: 'good',      label: 'Good',      action: 'maintain', color: '#4f6ef7' };
+  if (roas >= 2) return { key: 'average',   label: 'Average',   action: 'optimize', color: '#f5a623' };
+  return           { key: 'poor',      label: 'Poor',      action: 'pause',    color: '#f04f5f' };
+}
+
+function isEngagementCampaign(row) {
+  const obj = (row.objective || '').toUpperCase();
+  const goal = (row.perfGoal || '').toLowerCase();
+  return obj.includes('ENGAGEMENT') || goal.includes('profile visit') || goal.includes('engagement');
+}
+
+function analyzeAd(ad, allData) {
+  const isEngagement = isEngagementCampaign(ad);
+  const points = [];
+
+  if (isEngagement) {
+    // Engagement campaign analysis
+    const avgCtr = allData.length > 1 ? avg(allData.filter(r => isEngagementCampaign(r)), 'ctr') : 0;
+    if (ad.ctr > 0) {
+      if (ad.ctr >= 2)    points.push({ type: 'good', text: `Strong CTR at ${ad.ctr.toFixed(2)}% — ad is generating clicks effectively.` });
+      else if (ad.ctr >= 1) points.push({ type: 'warn', text: `Moderate CTR at ${ad.ctr.toFixed(2)}% — test stronger visuals or copy to improve engagement.` });
+      else                points.push({ type: 'bad',  text: `Low CTR at ${ad.ctr.toFixed(2)}% — creative is not resonating; refresh the hook or message.` });
+    }
+    if (ad.hookRate !== null) {
+      if (ad.hookRate >= 30) points.push({ type: 'good', text: `Excellent hook rate ${ad.hookRate}% — the first 3 seconds are stopping the scroll.` });
+      else if (ad.hookRate >= 15) points.push({ type: 'warn', text: `Hook rate ${ad.hookRate}% (target ≥30%) — first 3 seconds need to be more compelling.` });
+      else                  points.push({ type: 'bad',  text: `Weak hook rate ${ad.hookRate}% — audience is not stopping. Try bolder opening frames or text overlays.` });
+    }
+    if (ad.holdRate !== null) {
+      if (ad.holdRate >= 35) points.push({ type: 'good', text: `Great hold rate ${ad.holdRate}% — audience is watching through the content.` });
+      else if (ad.holdRate >= 20) points.push({ type: 'warn', text: `Hold rate ${ad.holdRate}% — viewers are dropping off mid-video. Tighten the middle section.` });
+      else                   points.push({ type: 'bad',  text: `Poor hold rate ${ad.holdRate}% — viewers leave right after the hook. Restructure the storytelling arc.` });
+    }
+    if (ad.recallLift > 0) {
+      points.push({ type: 'info', text: `Ad recall lift: ${fmtNum(ad.recallLift)} people estimated (~${ad.recallRate?.toFixed(2) || '–'}%). Brand awareness is growing.` });
+    }
+    if (ad.postEngage > 0) {
+      points.push({ type: ad.costEngage < 5 ? 'good' : 'warn', text: `Post engagements: ${fmtNum(ad.postEngage)} at ${S.currency}${ad.costEngage?.toFixed(2) || '–'} CPE.` });
+    }
+    if (ad.frequency > 0) {
+      if (ad.frequency >= 4)      points.push({ type: 'bad',  text: `Frequency at ${ad.frequency.toFixed(1)}x — audience is heavily saturated. Expand reach or refresh creative.` });
+      else if (ad.frequency >= 2.5) points.push({ type: 'warn', text: `Frequency ${ad.frequency.toFixed(1)}x — approaching saturation. Monitor engagement trends closely.` });
+      else                         points.push({ type: 'good', text: `Healthy frequency at ${ad.frequency.toFixed(1)}x — room to increase delivery.` });
+    }
+    if (ad.cpm > 0) {
+      if (ad.cpm > 300)  points.push({ type: 'bad',  text: `High CPM of ${S.currency}${fmtNum(ad.cpm)} — audience is expensive. Try broader targeting or different placement.` });
+      else if (ad.cpm > 150) points.push({ type: 'warn', text: `CPM ${S.currency}${fmtNum(ad.cpm)} — moderate cost per impression.` });
+      else               points.push({ type: 'good', text: `Efficient CPM at ${S.currency}${fmtNum(ad.cpm)}.` });
+    }
+  } else {
+    // Sales campaign — ROAS-based analysis
+    const tier = roasTier(ad.roas);
+    const avgRoas = allData.length > 0 ? wavg(allData, 'roas', 'spend') : 0;
+
+    // ROAS positioning
+    if (ad.roas >= 5) points.push({ type: 'good', text: `Outstanding ROAS of ${ad.roas.toFixed(2)}x — ${ad.roas > avgRoas * 1.5 ? `${Math.round(((ad.roas/avgRoas)-1)*100)}% above portfolio average.` : 'above portfolio average.'}` });
+    else if (ad.roas >= 3) points.push({ type: 'good', text: `Good ROAS ${ad.roas.toFixed(2)}x — profitable and worth maintaining.` });
+    else if (ad.roas >= 2) points.push({ type: 'warn', text: `Average ROAS ${ad.roas.toFixed(2)}x — marginal profitability. Needs optimisation.` });
+    else if (ad.roas > 0)  points.push({ type: 'bad',  text: `Poor ROAS ${ad.roas.toFixed(2)}x — ad is not generating sufficient returns. ${ad.spend > 5000 ? `Wasting ${S.currency}${fmtNum(ad.spend)} budget.` : ''}` });
+    else                   points.push({ type: 'bad',  text: `Zero ROAS — no revenue attributed. Check pixel setup or pause immediately.` });
+
+    // Spend vs returns
+    if (ad.spend > 0 && ad.revenue > 0) {
+      points.push({ type: ad.roas >= 3 ? 'good' : 'warn', text: `Spent ${S.currency}${fmtNum(ad.spend)} → generated ${S.currency}${fmtNum(ad.revenue)} revenue.` });
+    }
+
+    // CPA analysis
+    if (ad.cpa > 0 && ad.purchases > 0) {
+      const allCpas = allData.filter(r => r.cpa > 0).map(r => r.cpa);
+      const avgCpa  = allCpas.length ? allCpas.reduce((a,b)=>a+b,0)/allCpas.length : 0;
+      if (avgCpa > 0) {
+        if (ad.cpa < avgCpa * 0.8)      points.push({ type: 'good', text: `CPA of ${S.currency}${fmtNum(ad.cpa)} is ${Math.round(((avgCpa-ad.cpa)/avgCpa)*100)}% below portfolio avg — very efficient acquisition.` });
+        else if (ad.cpa > avgCpa * 1.3) points.push({ type: 'bad',  text: `CPA ${S.currency}${fmtNum(ad.cpa)} is ${Math.round(((ad.cpa-avgCpa)/avgCpa)*100)}% above portfolio avg — each purchase costs more here.` });
+        else                            points.push({ type: 'warn', text: `CPA of ${S.currency}${fmtNum(ad.cpa)} is in line with portfolio average (${S.currency}${fmtNum(avgCpa)}).` });
+      }
+    }
+
+    // ATC → Purchase funnel
+    if (ad.addsToCart > 0) {
+      const cvr = ad.purchases > 0 ? (ad.purchases / ad.addsToCart) * 100 : 0;
+      if (cvr === 0)       points.push({ type: 'bad',  text: `${fmtNum(ad.addsToCart)} adds-to-cart but 0 purchases — checkout is broken or landing page has critical friction.` });
+      else if (cvr < 20)   points.push({ type: 'bad',  text: `Low ATC→purchase conversion ${cvr.toFixed(0)}% (${fmtNum(ad.addsToCart)} ATCs → ${fmtNum(ad.purchases)} purchases). Checkout friction is leaking revenue.` });
+      else if (cvr < 40)   points.push({ type: 'warn', text: `ATC conversion ${cvr.toFixed(0)}% — moderate. Review checkout flow and payment options.` });
+      else                 points.push({ type: 'good', text: `Strong ATC→purchase rate ${cvr.toFixed(0)}% — checkout is converting well.` });
+    }
+
+    // Hook & Hold
+    if (ad.hookRate !== null) {
+      if (ad.hookRate >= 30) points.push({ type: 'good', text: `Strong hook rate ${ad.hookRate}% — creative stops the scroll effectively.` });
+      else if (ad.hookRate >= 15) points.push({ type: 'warn', text: `Hook rate ${ad.hookRate}% (target ≥30%) — test a more provocative opening.` });
+      else                  points.push({ type: 'bad',  text: `Weak hook rate ${ad.hookRate}% — most viewers skip before engaging with the offer.` });
+    }
+    if (ad.holdRate !== null) {
+      if (ad.holdRate >= 35) points.push({ type: 'good', text: `Excellent video retention ${ad.holdRate}% — story is holding viewers through to the CTA.` });
+      else if (ad.holdRate >= 20) points.push({ type: 'warn', text: `Hold rate ${ad.holdRate}% — viewers dropping off before CTA. Front-load the value proposition.` });
+      else                   points.push({ type: 'bad',  text: `Low hold rate ${ad.holdRate}% — video loses viewers fast. Shorten the video or restructure to deliver value earlier.` });
+    }
+
+    // CTR analysis
+    if (ad.ctr > 0) {
+      if (ad.ctr >= 2)    points.push({ type: 'good', text: `Good CTR ${ad.ctr.toFixed(2)}% — ad is compelling enough to earn clicks.` });
+      else if (ad.ctr >= 0.8) points.push({ type: 'warn', text: `Below-average CTR ${ad.ctr.toFixed(2)}% — creative may lack urgency or clear CTA.` });
+      else                points.push({ type: 'bad',  text: `Very low CTR ${ad.ctr.toFixed(2)}% — audience is scrolling past without engaging. Test new creatives or audiences.` });
+    }
+
+    // Frequency & Fatigue
+    if (ad.frequency > 0) {
+      if (ad.frequency >= 4)      points.push({ type: 'bad',  text: `Frequency ${ad.frequency.toFixed(1)}x — audience oversaturated. Creative fatigue is likely suppressing ROAS. Introduce new variants.` });
+      else if (ad.frequency >= 2.5) points.push({ type: 'warn', text: `Frequency ${ad.frequency.toFixed(1)}x — approaching saturation threshold. Monitor performance closely.` });
+      else                         points.push({ type: 'good', text: `Healthy frequency ${ad.frequency.toFixed(1)}x — audience is not over-exposed yet.` });
+    }
+
+    // CPM efficiency
+    if (ad.cpm > 0) {
+      if (ad.cpm > 300)  points.push({ type: 'bad',  text: `Expensive CPM ${S.currency}${fmtNum(ad.cpm)} — audience segment is competitive or narrow. Consider broadening targeting.` });
+      else if (ad.cpm > 150) points.push({ type: 'warn', text: `Moderate CPM ${S.currency}${fmtNum(ad.cpm)}.` });
+      else               points.push({ type: 'good', text: `Efficient CPM ${S.currency}${fmtNum(ad.cpm)} — reaching audience cost-effectively.` });
+    }
+
+    // AOV signal
+    if (ad.aov > 0 && ad.roas < 3) {
+      points.push({ type: 'info', text: `Avg order value ${S.currency}${fmtNum(ad.aov)} — ${ad.aov < 500 ? 'low AOV is reducing ROAS ceiling. Consider upsell/bundle offers.' : 'AOV is solid; ROAS issue is volume-driven.'}` });
+    }
   }
-  const reportId = parseInt(selEl?.value) || S.activeReportId;
-  const report = S.reports.find(r => r.id === reportId);
-  const data = filteredRows(report?.rows);
+
+  return points;
+}
+
+function adActionLabel(ad) {
+  if (isEngagementCampaign(ad)) {
+    if (ad.ctr >= 1.5 && (ad.hookRate === null || ad.hookRate >= 20)) return 'maintain';
+    if (ad.recallLift > 0 && ad.costEngage < 10) return 'good';
+    return 'optimize';
+  }
+  return roasTier(ad.roas).action;
+}
+
+function renderInsights() {
+  const data = filteredRows();
+  const treeEl   = document.getElementById('insights-tree');
+  const tierEl   = document.getElementById('insights-tier-bars');
+  const kpiEl    = document.getElementById('insights-kpi-row');
+  const filterEl = document.getElementById('insights-filter');
+  const badgeEl  = document.getElementById('insights-objective-badge');
+
   if (!data.length) {
-    document.getElementById('insights-list').innerHTML = `<div class="empty"><div class="empty-icon">◈</div><h3>Select a report</h3></div>`;
-    document.getElementById('gap-list').innerHTML = '';
+    if (treeEl) treeEl.innerHTML = `<div class="empty"><div class="empty-icon">◈</div><h3>No data loaded</h3><p>Upload an Excel report and select a date range.</p></div>`;
+    if (tierEl) tierEl.innerHTML = '';
+    if (kpiEl)  kpiEl.innerHTML  = '';
+    buildInsightCharts([]);
     return;
   }
-  buildInsights(data);
-  buildGapAnalysis(data, report);
+
+  const tierFilter = filterEl?.value || 'all';
+
+  // Detect dominant objective
+  const engCount  = data.filter(isEngagementCampaign).length;
+  const salesCount = data.length - engCount;
+  const dominantObj = engCount > salesCount ? 'Engagement' : 'Sales';
+  if (badgeEl) badgeEl.textContent = `${dominantObj} campaigns`;
+
+  // KPI summary row
+  const totSpend   = sum(data, 'spend');
+  const totRev     = sum(data, 'revenue');
+  const blendedRoas = totRev > 0 && totSpend > 0 ? (totRev / totSpend).toFixed(2) : '—';
+  const totImpr    = sum(data, 'impressions');
+  const totPurch   = sum(data, 'purchases');
+  const salesData  = data.filter(d => !isEngagementCampaign(d));
+  const excellent  = salesData.filter(d => d.roas >= 5).length;
+  const good       = salesData.filter(d => d.roas >= 3 && d.roas < 5).length;
+  const average    = salesData.filter(d => d.roas >= 2 && d.roas < 3).length;
+  const poor       = salesData.filter(d => d.roas < 2).length;
+
+  if (kpiEl) kpiEl.innerHTML = [
+    { label: 'Total Spend',    value: `${S.currency}${fmtNum(totSpend)}`,   cls: '' },
+    { label: 'Total Revenue',  value: `${S.currency}${fmtNum(totRev)}`,     cls: '' },
+    { label: 'Blended ROAS',   value: blendedRoas !== '—' ? blendedRoas + 'x' : '—', cls: '' },
+    { label: 'Total Purchases',value: fmtNum(totPurch),                     cls: '' },
+    { label: 'Total Ads',      value: data.length,                          cls: '' },
+  ].map(k => `<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div></div>`).join('');
+
+  // Tier overview bars
+  if (tierEl && salesData.length) {
+    const total = salesData.length;
+    const tiers = [
+      { key: 'excellent', label: 'Excellent ≥5x', count: excellent, cls: 'excellent', action: 'Push Budget' },
+      { key: 'good',      label: 'Good 3–5x',     count: good,      cls: 'good',      action: 'Maintain'    },
+      { key: 'average',   label: 'Average 2–3x',  count: average,   cls: 'average',   action: 'Optimise'    },
+      { key: 'poor',      label: 'Poor <2x',       count: poor,      cls: 'poor',      action: 'Pause/Rework'},
+    ];
+    tierEl.innerHTML = tiers.map(t => `
+      <div class="ins-tier-bar">
+        <span class="ins-tier-label tier-${t.cls}">${t.label}</span>
+        <div class="ins-tier-track"><div class="ins-tier-fill tier-fill-${t.cls}" style="width:${total>0?Math.round((t.count/total)*100):0}%"></div></div>
+        <span class="ins-tier-stats">${t.count} ad${t.count!==1?'s':''} · ${total>0?Math.round((t.count/total)*100):0}% · <strong>${t.action}</strong></span>
+      </div>`).join('');
+  } else if (tierEl) {
+    tierEl.innerHTML = `<p style="font-size:11px;color:var(--text3)">Engagement campaign — analysis based on engagement metrics.</p>`;
+  }
+
+  // Build campaign→adset→ad hierarchy
+  const campMap = new Map();
+  data.forEach(ad => {
+    if (!campMap.has(ad.campaignName)) campMap.set(ad.campaignName, new Map());
+    const adsetMap = campMap.get(ad.campaignName);
+    if (!adsetMap.has(ad.adsetName)) adsetMap.set(ad.adsetName, []);
+    adsetMap.get(ad.adsetName).push(ad);
+  });
+
+  // Apply tier filter
+  const matchesTier = (ad) => {
+    if (tierFilter === 'all') return true;
+    if (isEngagementCampaign(ad)) return tierFilter === 'all';
+    const t = roasTier(ad.roas).key;
+    return t === tierFilter;
+  };
+
+  let treeHtml = '';
+  let campIdx = 0;
+  for (const [campName, adsetMap] of campMap) {
+    const campAds = [...adsetMap.values()].flat();
+    const filteredCampAds = campAds.filter(matchesTier);
+    if (!filteredCampAds.length && tierFilter !== 'all') continue;
+
+    const campSpend   = sum(campAds, 'spend');
+    const campRev     = sum(campAds, 'revenue');
+    const campRoas    = campRev > 0 && campSpend > 0 ? +(campRev / campSpend).toFixed(2) : 0;
+    const campPurch   = sum(campAds, 'purchases');
+    const isEngCamp   = campAds.some(isEngagementCampaign);
+    const campTier    = isEngCamp ? { color: '#38bdf8', label: 'Engagement' } : roasTier(campRoas);
+    const campImpr    = sum(campAds, 'impressions');
+
+    // Campaign-level summary
+    const campIssues = [];
+    const fatigued   = campAds.filter(a => a.frequency >= 3 && a.roas < campRoas);
+    if (fatigued.length) campIssues.push(`${fatigued.length} ad${fatigued.length>1?'s':''} showing frequency fatigue`);
+    const poor        = campAds.filter(a => !isEngagementCampaign(a) && a.roas < 2);
+    if (poor.length)  campIssues.push(`${poor.length} poor-ROAS ad${poor.length>1?'s':''} draining budget`);
+    const excellent   = campAds.filter(a => !isEngagementCampaign(a) && a.roas >= 5);
+    if (excellent.length) campIssues.push(`${excellent.length} excellent ad${excellent.length>1?'s':''} ready to scale`);
+
+    const cid = `camp-${campIdx++}`;
+    treeHtml += `
+      <div class="ins-campaign">
+        <div class="ins-campaign-hdr" onclick="insToggle('${cid}',this)">
+          <span class="ins-caret">▶</span>
+          <span class="camp-name">${escHtml(campName)}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:8px;background:${campTier.color}22;color:${campTier.color};font-weight:600;margin-right:8px">${isEngCamp ? 'Engagement' : campTier.label + ' ' + campRoas + 'x'}</span>
+          <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(campSpend)} · ${fmtNum(campImpr)} impr${campPurch > 0 ? ' · ' + fmtNum(campPurch) + ' purchases' : ''}</span>
+        </div>
+        <div class="ins-campaign-body" id="${cid}">
+          ${campIssues.length ? `<div style="font-size:11px;color:var(--text2);margin-bottom:10px;padding:8px 10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--accent)">${campIssues.join(' · ')}</div>` : ''}
+          ${renderAdsetTree(adsetMap, data, matchesTier, campIdx)}
+        </div>
+      </div>`;
+  }
+
+  if (treeEl) treeEl.innerHTML = treeHtml || `<div class="empty"><div class="empty-icon">◈</div><h3>No ads match this filter</h3></div>`;
   buildInsightCharts(data);
-  const mode = S.settings.apiKey ? 'Claude API' : 'rule-based';
   const modeEl = document.getElementById('ai-mode-label');
-  if (modeEl) modeEl.textContent = mode;
+  if (modeEl) modeEl.textContent = S.settings.apiKey ? 'Claude API' : 'rule-based';
 }
 
-function buildInsights(data) {
-  const sorted = [...data].sort((a, b) => b.roas - a.roas);
-  const top = sorted[0], bot = sorted[sorted.length - 1];
-  const avgR = wavg(data, 'roas', 'spend');
-  const totSpend = sum(data, 'spend');
-  const totRev = sum(data, 'revenue');
-  const insights = [];
+function renderAdsetTree(adsetMap, allData, matchesTier, campIdx) {
+  let html = '';
+  let adsetIdx = 0;
+  for (const [adsetName, ads] of adsetMap) {
+    const filteredAds = ads.filter(matchesTier);
+    if (!filteredAds.length) { adsetIdx++; continue; }
 
-  // Scale winner
-  const topPct = Math.round(((top.roas / avgR) - 1) * 100);
-  insights.push({ tag: 'scale', lbl: 'Scale', ico: '↑', cls: 'ico-green',
-    text: `<strong>${top.adName}</strong> — ${top.roas}x ROAS (${topPct > 0 ? '+' + topPct : topPct}% vs avg ${avgR.toFixed(2)}x). ${top.frequency < 2.5 ? 'Frequency is healthy at ' + (top.frequency?.toFixed(1) || '—') + 'x — safe to scale budget 20–30%.' : 'Frequency reaching ' + (top.frequency?.toFixed(1) || '—') + 'x — scale carefully with new audiences.'}` });
+    const adsetSpend  = sum(ads, 'spend');
+    const adsetRev    = sum(ads, 'revenue');
+    const adsetRoas   = adsetRev > 0 && adsetSpend > 0 ? +(adsetRev / adsetSpend).toFixed(2) : 0;
+    const adsetPurch  = sum(ads, 'purchases');
+    const adsetImpr   = sum(ads, 'impressions');
+    const isEngAdset  = ads.some(isEngagementCampaign);
+    const adsetTier   = isEngAdset ? { color: '#38bdf8', label: 'Engagement' } : roasTier(adsetRoas);
 
-  // Pause loser
-  insights.push({ tag: 'pause', lbl: 'Pause', ico: '✕', cls: 'ico-red',
-    text: `<strong>${bot.adName}</strong> — ${bot.roas}x ROAS with ${S.currency}${fmtNum(bot.spend)} spent. ${bot.status === 'paused' ? 'Already paused.' : 'Consider pausing and reallocating budget to top performers.'}` });
+    // Adset-level summary points
+    const adsetPoints = [];
+    const topAd = [...ads].sort((a,b) => (isEngAdset ? b.ctr - a.ctr : b.roas - a.roas))[0];
+    const botAd = [...ads].sort((a,b) => (isEngAdset ? a.ctr - b.ctr : a.roas - b.roas))[0];
+    if (ads.length > 1 && topAd && botAd && topAd !== botAd) {
+      adsetPoints.push(isEngAdset
+        ? `Best CTR: "${topAd.adName.slice(0,40)}" (${topAd.ctr.toFixed(2)}%) vs worst (${botAd.ctr.toFixed(2)}%)`
+        : `Best ad: "${topAd.adName.slice(0,40)}" (${topAd.roas.toFixed(2)}x) vs worst (${botAd.roas.toFixed(2)}x)`);
+    }
+    const fatigued = ads.filter(a => a.frequency >= 3);
+    if (fatigued.length) adsetPoints.push(`${fatigued.length} ad${fatigued.length>1?'s':''} with high frequency (≥3x)`);
 
-  // Frequency fatigue
-  const fatigued = data.filter(c => c.frequency >= 3 && c.roas < avgR);
-  if (fatigued.length) {
-    insights.push({ tag: 'fatigue', lbl: 'Fatigue', ico: '⚠', cls: 'ico-amber',
-      text: `<strong>${fatigued.length} creative${fatigued.length > 1 ? 's' : ''}</strong> have frequency ≥ 3x with below-average ROAS: ${fatigued.slice(0, 3).map(c => c.adName).join(', ')}. Rotate or refresh these — audience is saturated.` });
+    const sid = `adset-${campIdx}-${adsetIdx++}`;
+    html += `
+      <div class="ins-adset">
+        <div class="ins-adset-hdr" onclick="insToggle('${sid}',this)">
+          <span class="ins-caret">▶</span>
+          <span class="adset-name">${escHtml(adsetName)}</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:6px;background:${adsetTier.color}22;color:${adsetTier.color};font-weight:600;margin-right:8px">${isEngAdset ? 'Engagement' : adsetTier.label + ' ' + adsetRoas + 'x'}</span>
+          <span style="font-size:11px;color:var(--text3)">${S.currency}${fmtNum(adsetSpend)}${adsetPurch > 0 ? ' · ' + fmtNum(adsetPurch) + ' conv' : ''}</span>
+        </div>
+        <div class="ins-adset-body" id="${sid}">
+          ${adsetPoints.length ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">${adsetPoints.join(' · ')}</div>` : ''}
+          ${filteredAds.map(ad => renderAdCard(ad, allData)).join('')}
+        </div>
+      </div>`;
   }
-
-  // Hook / Hold analysis
-  const withHook = data.filter(c => c.hookRate !== null).sort((a, b) => b.hookRate - a.hookRate);
-  if (withHook.length) {
-    const bestHook = withHook[0];
-    insights.push({ tag: 'info', lbl: 'Best Hook', ico: '🎣', cls: 'ico-blue',
-      text: `<strong>${bestHook.adName}</strong> has the strongest hook at ${bestHook.hookRate}% (benchmark: 25–35% = good). ${bestHook.holdRate !== null ? `Hold rate: ${bestHook.holdRate}% — ${bestHook.holdRate >= 35 ? 'excellent retention.' : bestHook.holdRate >= 20 ? 'average — tighten middle of video.' : 'poor — viewers leave after hook, story needs work.'}` : ''}` });
-    const badHook = withHook.filter(c => c.hookRate < 15);
-    if (badHook.length) insights.push({ tag: 'fatigue', lbl: 'Weak Hook', ico: '↘', cls: 'ico-amber',
-      text: `<strong>${badHook.slice(0, 3).map(c => c.adName).join(', ')}</strong> — hook rate below 15%. The first 3 seconds fail to stop scroll. Test a stronger opening: bold text, movement, or a direct question.` });
-    const hookGood = data.filter(c => c.hookRate >= 25 && c.holdRate !== null && c.holdRate < 20);
-    if (hookGood.length) insights.push({ tag: 'gap', lbl: 'Retention Gap', ico: '↕', cls: 'ico-cyan',
-      text: `<strong>${hookGood.slice(0, 2).map(c => c.adName).join(', ')}</strong> — great hook but hold rate < 20%. The ad stops the scroll but fails to deliver. Restructure content after the hook.` });
-  }
-
-  // ATC → Purchase funnel
-  const withAtc = data.filter(c => c.addsToCart > 0 && c.purchases > 0);
-  if (withAtc.length) {
-    const worst = [...withAtc].sort((a, b) => (a.purchases / a.addsToCart) - (b.purchases / b.addsToCart))[0];
-    const rate = ((worst.purchases / worst.addsToCart) * 100).toFixed(0);
-    if (parseInt(rate) < 25) insights.push({ tag: 'gap', lbl: 'Cart Drop-off', ico: '🛒', cls: 'ico-cyan',
-      text: `<strong>${worst.adName}</strong> — ${worst.addsToCart} ATCs but only ${worst.purchases} purchases (${rate}% conversion). The ad generates intent but checkout friction is losing revenue. Check landing page, pricing, and checkout UX.` });
-  }
-
-  // Best format
-  const fmtMap = {};
-  data.forEach(c => { if (!fmtMap[c.format]) fmtMap[c.format] = []; fmtMap[c.format].push(c.roas); });
-  let bestFmt = '', bestFmtV = 0;
-  for (const [f, vs] of Object.entries(fmtMap)) { const a = vs.reduce((x,y)=>x+y,0)/vs.length; if (a > bestFmtV) { bestFmtV = a; bestFmt = f; } }
-  insights.push({ tag: 'info', lbl: 'Best Format', ico: '▦', cls: 'ico-blue',
-    text: `<strong>${bestFmt}</strong> format delivers the highest avg ROAS (${bestFmtV.toFixed(2)}x). Prioritise this format in upcoming creative production. ${Object.keys(fmtMap).length > 1 ? 'Weakest format: ' + Object.entries(fmtMap).sort((a,b)=>a[1].reduce((x,y)=>x+y,0)/a[1].length - b[1].reduce((x,y)=>x+y,0)/b[1].length)[0][0] + '.' : ''}` });
-
-  // Budget concentration
-  const top3Spend = [...data].sort((a, b) => b.spend - a.spend).slice(0, 3);
-  const top3Pct = Math.round((sum(top3Spend, 'spend') / totSpend) * 100);
-  if (top3Pct > 70) insights.push({ tag: 'info', lbl: 'Concentration', ico: '$', cls: 'ico-amber',
-    text: `Top 3 creatives consume <strong>${top3Pct}%</strong> of budget. Diversify testing — allocate 10–20% budget to new untested variants to build a creative pipeline.` });
-
-  // Portfolio ROAS
-  if (totRev > 0) insights.push({ tag: 'info', lbl: 'Portfolio', ico: '₹', cls: 'ico-green',
-    text: `Portfolio generated <strong>${S.currency}${fmtNum(totRev)}</strong> revenue on ${S.currency}${fmtNum(totSpend)} spend — blended ROAS of <strong>${(totRev / totSpend).toFixed(2)}x</strong>.` });
-
-  // Knowledge-base context
-  const kbInsights = S.knowledge.filter(k => k.category === 'benchmark' || k.category === 'strategy');
-  if (kbInsights.length) insights.push({ tag: 'info', lbl: 'Knowledge', ico: '📚', cls: 'ico-cyan',
-    text: `${kbInsights.length} knowledge item${kbInsights.length > 1 ? 's' : ''} from your knowledge base are being used as context for AI analysis.` });
-
-  document.getElementById('insights-list').innerHTML = insights.map(i => `
-    <div class="insight-card">
-      <div class="insight-ico ${i.cls}">${i.ico}</div>
-      <div class="insight-body"><span class="insight-tag tag-${i.tag}">${i.lbl}</span><br>${i.text}</div>
-    </div>`).join('');
+  return html;
 }
 
-function buildGapAnalysis(data, report) {
-  const hasVideo = data.some(c => c.hookRate !== null);
-  const hasReach = data.some(c => c.reach > 0);
-  const hasFreq  = data.some(c => c.frequency > 0);
-  const hasCPA   = data.some(c => c.cpa > 0);
-  const hasConv  = data.some(c => c.purchases > 0);
-  const hasAtc   = data.some(c => c.addsToCart > 0);
-  const hasRev   = data.some(c => c.revenue > 0);
-  const hasMedia = data.some(c => c.url);
-  const hasCamp  = data.some(c => c.campaignName && c.campaignName !== 'Unknown Campaign');
+function renderAdCard(ad, allData) {
+  const isEng    = isEngagementCampaign(ad);
+  const tier     = isEng ? { color: '#38bdf8', label: 'Engagement', action: 'maintain', key: 'good' } : roasTier(ad.roas);
+  const points   = analyzeAd(ad, allData);
+  const action   = adActionLabel(ad);
 
-  const checks = [
-    { ok: true,     lbl: 'Report loaded',       detail: `${data.length} ads from "${report?.fileName}"` },
-    { ok: hasMedia, lbl: 'Creative thumbnails',  detail: 'Upload creative files matching ad names for visual preview.' },
-    { ok: hasCamp,  lbl: 'Campaign hierarchy',   detail: 'Export "Campaign name" and "Ad set name" for hierarchy view.' },
-    { ok: hasVideo, lbl: 'Hook & Hold Rate',      detail: 'Add "3-second video views" and "Thru plays" columns in Ads Manager.' },
-    { ok: hasReach, lbl: 'Reach data',            detail: 'Export "Reach" column for accurate frequency calculation.' },
-    { ok: hasFreq,  lbl: 'Frequency data',        detail: 'Critical for creative fatigue detection.' },
-    { ok: hasConv,  lbl: 'Purchase count',        detail: 'Export "Purchases" column.' },
-    { ok: hasAtc,   lbl: 'Adds to cart (funnel)', detail: 'Export "Adds to cart" for ATC→Purchase funnel analysis.' },
-    { ok: hasRev,   lbl: 'Revenue / Conv. value', detail: 'Export "Purchases conversion value" for true ROAS validation.' },
-    { ok: hasCPA,   lbl: 'CPA / Cost per result', detail: 'Export "Cost per purchase" column.' },
-    { ok: S.reports.length >= 2, lbl: '2+ reports (period comparison)', detail: 'Upload another date range to enable Trends analysis.' },
-    { ok: S.knowledge.length > 0, lbl: 'Knowledge base populated',    detail: 'Add brand context, benchmarks, and strategies for richer AI insights.' },
-  ];
+  const metrics = [];
+  if (!isEng && ad.roas > 0)     metrics.push({ label: `ROAS ${ad.roas.toFixed(2)}x`, cls: tier.key === 'excellent' ? 'good' : tier.key === 'poor' ? 'bad' : tier.key === 'good' ? 'good' : 'warn' });
+  if (ad.spend > 0)              metrics.push({ label: `${S.currency}${fmtNum(ad.spend)} spend`, cls: '' });
+  if (ad.impressions > 0)        metrics.push({ label: `${fmtNum(ad.impressions)} impr`, cls: '' });
+  if (ad.ctr > 0)                metrics.push({ label: `CTR ${ad.ctr.toFixed(2)}%`, cls: ad.ctr >= 1.5 ? 'good' : ad.ctr < 0.5 ? 'bad' : '' });
+  if (ad.cpm > 0)                metrics.push({ label: `CPM ${S.currency}${fmtNum(ad.cpm)}`, cls: ad.cpm > 300 ? 'bad' : '' });
+  if (ad.frequency > 0)          metrics.push({ label: `Freq ${ad.frequency.toFixed(1)}x`, cls: ad.frequency >= 4 ? 'bad' : ad.frequency >= 2.5 ? 'warn' : 'good' });
+  if (ad.hookRate !== null)      metrics.push({ label: `Hook ${ad.hookRate}%`, cls: ad.hookRate >= 25 ? 'good' : ad.hookRate < 15 ? 'bad' : 'warn' });
+  if (ad.holdRate !== null)      metrics.push({ label: `Hold ${ad.holdRate}%`, cls: ad.holdRate >= 35 ? 'good' : ad.holdRate < 20 ? 'bad' : 'warn' });
+  if (!isEng && ad.purchases > 0) metrics.push({ label: `${fmtNum(ad.purchases)} purchases`, cls: 'good' });
+  if (!isEng && ad.cpa > 0)     metrics.push({ label: `CPA ${S.currency}${fmtNum(ad.cpa)}`, cls: '' });
+  if (ad.recallLift > 0)        metrics.push({ label: `Recall +${fmtNum(ad.recallLift)}`, cls: 'good' });
+  if (ad.audienceSeg)            metrics.push({ label: ad.audienceSeg, cls: '' });
 
-  document.getElementById('gap-list').innerHTML = checks.map(c => `
-    <div class="gap-item">
-      <div class="gap-dot ${c.ok ? 'gap-ok' : 'gap-fail'}"></div>
-      <div class="gap-text"><strong>${c.lbl}</strong><br>${c.ok ? '✓ Present' : c.detail}</div>
-    </div>`).join('');
+  return `
+    <div class="ins-ad">
+      <div class="ins-ad-tier" style="background:${tier.color}"></div>
+      <div class="ins-ad-content">
+        <div class="ins-ad-name" title="${escHtml(ad.adName)}">${escHtml(ad.adName)}</div>
+        <div class="ins-ad-metrics">
+          ${metrics.map(m => `<span class="ins-metric-chip ${m.cls}">${m.label}</span>`).join('')}
+        </div>
+        <ul class="ins-points">
+          ${points.map(p => `<li class="${p.type}">${p.text}</li>`).join('')}
+        </ul>
+        <span class="ins-action ${action}">${action === 'scale' ? '↑ Scale Budget' : action === 'maintain' ? '✓ Maintain' : action === 'optimize' ? '→ Optimise' : '✕ Pause / Rework'}</span>
+      </div>
+    </div>`;
 }
+
+function insToggle(id, hdr) {
+  const body = document.getElementById(id);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (hdr) hdr.classList.toggle('open', isOpen);
+}
+
+function insightsExpandAll() {
+  document.querySelectorAll('.ins-campaign-body,.ins-adset-body').forEach(el => el.classList.add('open'));
+  document.querySelectorAll('.ins-campaign-hdr,.ins-adset-hdr').forEach(el => el.classList.add('open'));
+}
+
+function insightsCollapseAll() {
+  document.querySelectorAll('.ins-campaign-body,.ins-adset-body').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.ins-campaign-hdr,.ins-adset-hdr').forEach(el => el.classList.remove('open'));
+}
+
+function buildInsights(data) { /* legacy — replaced by renderInsights */ }
 
 function buildInsightCharts(data) {
+  if (!data.length) { mkChart('topBottomChart', null); mkChart('matrixChart', null); return; }
   const sorted = [...data].sort((a, b) => b.roas - a.roas);
   const top3 = sorted.slice(0, 3), bot3 = sorted.slice(-3).reverse();
   mkChart('topBottomChart', {
@@ -3066,14 +3393,6 @@ function renderSettings() {
   document.getElementById('st-apikey').value   = S.settings.apiKey  || '';
   document.getElementById('st-proxy').value    = S.settings.proxy   || '';
   document.getElementById('st-currency').value = S.settings.currency || '₹';
-  document.getElementById('st-meta-token').value   = S.settings.metaToken       || '';
-  document.getElementById('st-meta-account').value = S.settings.metaAdAccountId || '';
-  const statusEl = document.getElementById('meta-settings-status');
-  if (statusEl) {
-    const ok = S.settings.metaToken && S.settings.metaAdAccountId;
-    statusEl.textContent = ok ? `act_${S.settings.metaAdAccountId}` : 'Not configured';
-    statusEl.style.color = ok ? 'var(--green)' : 'var(--text3)';
-  }
   if (navigator.storage?.estimate) {
     navigator.storage.estimate().then(({ usage, quota }) => {
       const el = document.getElementById('storage-stats');
@@ -3091,215 +3410,6 @@ async function saveSettings() {
   await saveSetting('currency', currency);
   S.currency = currency;
   toast('✓ Settings saved');
-}
-
-// ═══════════════════════════════════════════════════
-// META ADS API
-// ═══════════════════════════════════════════════════
-async function saveMetaSettings() {
-  const token     = document.getElementById('st-meta-token').value.trim();
-  const accountId = document.getElementById('st-meta-account').value.trim().replace(/^act_/i, '');
-  await saveSetting('metaToken',       token);
-  await saveSetting('metaAdAccountId', accountId);
-  renderSettings();
-  renderMetaApiPanel();
-  toast('✓ Meta API credentials saved');
-}
-
-async function testMetaConnection() {
-  const token     = document.getElementById('st-meta-token').value.trim();
-  const accountId = document.getElementById('st-meta-account').value.trim().replace(/^act_/i, '');
-  const resultEl  = document.getElementById('meta-test-result');
-  const btn       = document.getElementById('test-meta-btn');
-  if (!token || !accountId) { toast('Enter token and account ID first'); return; }
-  btn.textContent = 'Testing…'; btn.disabled = true;
-  resultEl.textContent = ''; resultEl.style.color = 'var(--text3)';
-  try {
-    const url = `https://graph.facebook.com/v21.0/act_${accountId}?fields=name,currency,timezone_name&access_token=${encodeURIComponent(token)}`;
-    const res  = await fetch(url);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error.message);
-    resultEl.textContent = `✓ ${json.name} · ${json.currency} · ${json.timezone_name}`;
-    resultEl.style.color = 'var(--green)';
-    btn.textContent = '✓ Connected'; btn.style.background = 'rgba(34,201,147,.15)'; btn.style.color = 'var(--green)';
-  } catch(e) {
-    resultEl.textContent = '✕ ' + e.message;
-    resultEl.style.color = 'var(--red)';
-    btn.textContent = 'Test connection';
-  }
-  btn.disabled = false;
-}
-
-function toggleMetaTokenVisibility() {
-  const inp = document.getElementById('st-meta-token');
-  const btn = document.getElementById('meta-token-toggle');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
-}
-
-function renderMetaApiPanel() {
-  const configured = !!(S.settings.metaToken && S.settings.metaAdAccountId);
-  const unconf = document.getElementById('meta-api-unconfigured');
-  const conf   = document.getElementById('meta-api-configured');
-  const status = document.getElementById('meta-api-status');
-  if (unconf) unconf.style.display = configured ? 'none' : 'block';
-  if (conf)   conf.style.display   = configured ? 'block' : 'none';
-  if (status) {
-    status.textContent = configured ? `act_${S.settings.metaAdAccountId}` : 'Not configured';
-    status.style.color = configured ? 'var(--green)' : 'var(--text3)';
-  }
-}
-
-function toggleMetaCustomDates() {
-  const preset = document.getElementById('meta-date-preset')?.value;
-  const wrap   = document.getElementById('meta-custom-dates');
-  if (wrap) wrap.style.display = preset === 'custom' ? 'flex' : 'none';
-}
-
-async function fetchFromMeta() {
-  const token     = S.settings.metaToken;
-  const accountId = S.settings.metaAdAccountId;
-  if (!token || !accountId) { toast('Configure Meta API in Settings first'); navigate('settings'); return; }
-
-  const preset    = document.getElementById('meta-date-preset')?.value || 'last_30_d';
-  const fetchBtn  = document.getElementById('meta-fetch-btn');
-  const statusEl  = document.getElementById('meta-fetch-status');
-  const progDiv   = document.getElementById('meta-fetch-progress');
-  const progBar   = document.getElementById('meta-progress-bar');
-  const progText  = document.getElementById('meta-progress-text');
-
-  const setProgress = (pct, msg) => {
-    if (progBar)  progBar.style.width = pct + '%';
-    if (progText) progText.textContent = msg;
-  };
-
-  fetchBtn.disabled = true; fetchBtn.textContent = 'Fetching…';
-  progDiv.style.display = 'block'; setProgress(5, 'Connecting to Meta…');
-  if (statusEl) { statusEl.textContent = ''; }
-
-  try {
-    let dateParam;
-    if (preset === 'custom') {
-      const from = document.getElementById('meta-from')?.value;
-      const to   = document.getElementById('meta-to')?.value;
-      if (!from || !to) { toast('Select a custom date range'); return; }
-      dateParam = `time_range=${encodeURIComponent(JSON.stringify({ since: from, until: to }))}`;
-    } else {
-      dateParam = `date_preset=${preset}`;
-    }
-
-    const fields = encodeURIComponent([
-      'campaign_name','adset_name','ad_name',
-      'impressions','reach','frequency','spend',
-      'inline_link_clicks','cpm','cpc',
-      'actions','action_values',
-      'video_30_sec_watched_actions','video_p100_watched_actions',
-    ].join(','));
-
-    const baseUrl = `https://graph.facebook.com/v21.0/act_${accountId}/insights`
-      + `?fields=${fields}&level=ad&time_increment=1&limit=500`
-      + `&${dateParam}&access_token=${encodeURIComponent(token)}`;
-
-    let allRows = [], nextUrl = baseUrl, page = 0;
-
-    while (nextUrl) {
-      page++;
-      setProgress(Math.min(85, 5 + page * 8), `Page ${page} · ${allRows.length} rows fetched…`);
-      const res  = await fetch(nextUrl);
-      const json = await res.json();
-      if (json.error) throw new Error(`(${json.error.code}) ${json.error.message}`);
-      (json.data || []).forEach(r => allRows.push(normalizeMetaRow(r)));
-      nextUrl = json.paging?.next || null;
-    }
-
-    if (!allRows.length) { toast('No data returned for this period.'); return; }
-
-    setProgress(92, `Processing ${allRows.length} rows…`);
-
-    // Attach any uploaded media by ad name match
-    allRows.forEach(row => {
-      if (!row.url) {
-        const m = findMedia(normFile(row.adName));
-        if (m) { row.url = m.url; row.mediaType = m.type; }
-      }
-    });
-
-    const dateMin = allRows.reduce((a,r) => (!a||r.rowDate<a) ? r.rowDate : a, '');
-    const dateMax = allRows.reduce((a,r) => (!a||r.rowDate>a) ? r.rowDate : a, '');
-
-    S.pending.rows      = allRows;
-    S.pending.excelFile = null;
-    S.pending.dateStart = dateMin;
-    S.pending.dateEnd   = dateMax;
-    S.pending.source    = 'meta_api';
-
-    const labelEl = document.getElementById('report-label');
-    if (labelEl) labelEl.value = `Meta API · ${fmtDate(dateMin)} – ${fmtDate(dateMax)}`;
-
-    setProgress(100, `✓ ${allRows.length} daily rows loaded`);
-    refreshPendingUI();
-    document.getElementById('upload-pending').style.display = 'block';
-
-    if (statusEl) { statusEl.textContent = `${allRows.length} rows ready · ${fmtDate(dateMin)} – ${fmtDate(dateMax)}`; statusEl.style.color = 'var(--green)'; }
-    toast(`✓ ${allRows.length} rows fetched from Meta API`);
-
-  } catch(e) {
-    toast('Meta API error: ' + e.message);
-    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = 'var(--red)'; }
-    setProgress(0, '');
-  } finally {
-    fetchBtn.disabled = false; fetchBtn.textContent = '↓ Fetch from Meta';
-    setTimeout(() => { progDiv.style.display = 'none'; setProgress(0,''); }, 4000);
-  }
-}
-
-function normalizeMetaRow(r) {
-  const act = (arr, type) => {
-    if (!arr) return 0;
-    // try exact match first, then partial match for fb_pixel variants
-    const found = arr.find(a => a.action_type === type)
-                || arr.find(a => a.action_type.includes(type));
-    return found ? parseFloat(found.value || 0) : 0;
-  };
-  const video = (arr) => arr?.length ? parseFloat(arr[0].value || 0) : 0;
-
-  const impressions = parseInt(r.impressions || 0);
-  const linkClicks  = parseInt(r.inline_link_clicks || 0) || act(r.actions, 'link_click');
-  const spend       = parseFloat(r.spend || 0);
-  const reach       = parseInt(r.reach   || 0);
-  const frequency   = parseFloat(r.frequency || 0);
-  const cpm         = parseFloat(r.cpm || 0);
-  const cpc         = parseFloat(r.cpc || 0);
-
-  // Purchases: try standard key, then fb_pixel variant
-  const purchases = act(r.actions, 'purchase');
-  const revenue   = act(r.action_values, 'purchase');
-  const addsToCart = act(r.actions, 'add_to_cart');
-  const video3s    = video(r.video_30_sec_watched_actions);
-  const thruplay   = video(r.video_p100_watched_actions);
-
-  const ctr      = impressions > 0 && linkClicks > 0 ? +((linkClicks / impressions) * 100).toFixed(2) : parseFloat(r.ctr || 0);
-  const roas     = revenue > 0 && spend > 0 ? +(revenue / spend).toFixed(2) : 0;
-  const cpa      = purchases > 0 && spend > 0 ? +(spend / purchases).toFixed(2) : 0;
-  const hookRate = impressions > 0 && video3s > 0 ? +((video3s / impressions) * 100).toFixed(1) : null;
-  const holdRate = video3s > 0 && thruplay > 0 ? +((thruplay / video3s) * 100).toFixed(1) : null;
-
-  return {
-    adName:       r.ad_name       || 'Unknown Ad',
-    adsetName:    r.adset_name    || 'Unknown Ad Set',
-    campaignName: r.campaign_name || 'Unknown Campaign',
-    format:  video3s > 0 ? 'Video' : 'Image',
-    status:  'active',
-    impressions, reach, spend, linkClicks, purchases, addsToCart,
-    revenue, video3s, thruplay, frequency, cpm, cpc, ctr, roas, cpa,
-    hookRate, holdRate,
-    rowDate:   r.date_start || '',
-    tier:      roas >= 4 ? 'top' : roas >= 2 ? 'mid' : 'low',
-    url:       null,
-    mediaType: null,
-    _rws: roas * spend,
-    _rw:  spend,
-  };
 }
 
 function exportAllData() {
@@ -3405,6 +3515,7 @@ function exportReport() {
 // ═══════════════════════════════════════════════════
 // UTILITIES
 // ═══════════════════════════════════════════════════
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function sum(arr, key)    { return arr.reduce((a, r) => a + (r[key] || 0), 0); }
 function avg(arr, key)    { return arr.length ? sum(arr, key) / arr.length : 0; }
 function wavg(arr, valKey, wKey) {
@@ -3468,26 +3579,43 @@ function aggregateByAd(rows) {
   const byKey = new Map();
   rows.forEach(row => {
     const key = `${row.adName}||${row.campaignName}||${row.adsetName}`;
-    if (!byKey.has(key)) byKey.set(key, { ...row, impressions:0,reach:0,spend:0,linkClicks:0,video3s:0,thruplay:0,purchases:0,addsToCart:0,revenue:0,_rws:0,_rw:0 });
+    if (!byKey.has(key)) byKey.set(key, {
+      ...row,
+      impressions:0,reach:0,spend:0,linkClicks:0,
+      videoPlays:0,video2s:0,video3s:0,video25:0,video50:0,video75:0,video95:0,thruplay:0,
+      purchases:0,addsToCart:0,revenue:0,views:0,
+      recallLift:0,postEngage:0,
+      _rws:0,_rw:0,_vapt_w:0,_vapt_wt:0
+    });
     const a = byKey.get(key);
     a.impressions += row.impressions||0; a.reach      += row.reach      ||0;
     a.spend       += row.spend      ||0; a.linkClicks += row.linkClicks ||0;
-    a.video3s     += row.video3s    ||0; a.thruplay   += row.thruplay   ||0;
+    a.videoPlays  += row.videoPlays ||0; a.video2s    += row.video2s    ||0;
+    a.video3s     += row.video3s    ||0; a.video25    += row.video25    ||0;
+    a.video50     += row.video50    ||0; a.video75    += row.video75    ||0;
+    a.video95     += row.video95    ||0; a.thruplay   += row.thruplay   ||0;
     a.purchases   += row.purchases  ||0; a.addsToCart += row.addsToCart ||0;
-    a.revenue     += row.revenue    ||0;
+    a.revenue     += row.revenue    ||0; a.views      += row.views      ||0;
+    a.recallLift  += row.recallLift ||0; a.postEngage += row.postEngage ||0;
     if (row.roas && row.spend) { a._rws += row.roas * row.spend; a._rw += row.spend; }
+    if (row.videoAvgPt && row.impressions) { a._vapt_w += row.videoAvgPt * row.impressions; a._vapt_wt += row.impressions; }
   });
   return [...byKey.values()].map(a => {
-    a.ctr      = a.impressions>0 ? +((a.linkClicks/a.impressions)*100).toFixed(2) : 0;
-    a.cpm      = a.impressions>0 ? +((a.spend/a.impressions)*1000).toFixed(2)     : 0;
-    a.cpc      = a.linkClicks >0 ? +(a.spend/a.linkClicks).toFixed(2)             : 0;
-    a.hookRate = a.impressions>0&&a.video3s >0 ? +((a.video3s /a.impressions)*100).toFixed(1) : null;
-    a.holdRate = a.video3s   >0&&a.thruplay>0 ? +((a.thruplay/a.video3s   )*100).toFixed(1) : null;
-    a.cpa      = a.purchases>0&&a.spend>0 ? +(a.spend/a.purchases).toFixed(2) : 0;
-    a.roas     = a.revenue>0&&a.spend>0 ? +(a.revenue/a.spend).toFixed(2) : (a._rw>0 ? +(a._rws/a._rw).toFixed(2) : 0);
-    a.frequency= a.reach>0 ? +(a.impressions/a.reach).toFixed(2) : 0;
-    a.tier     = a.roas>=4?'top':a.roas>=2?'mid':'low';
-    delete a._rws; delete a._rw;
+    a.ctr        = a.impressions>0 ? +((a.linkClicks/a.impressions)*100).toFixed(2) : 0;
+    a.cpm        = a.impressions>0 ? +((a.spend/a.impressions)*1000).toFixed(2)     : 0;
+    a.cpc        = a.linkClicks >0 ? +(a.spend/a.linkClicks).toFixed(2)             : 0;
+    a.hookRate   = a.impressions>0&&a.video3s >0 ? +((a.video3s /a.impressions)*100).toFixed(1) : null;
+    a.holdRate   = a.video3s   >0&&a.thruplay>0 ? +((a.thruplay/a.video3s   )*100).toFixed(1) : null;
+    a.cpa        = a.purchases>0&&a.spend>0 ? +(a.spend/a.purchases).toFixed(2) : 0;
+    a.roas       = a.revenue>0&&a.spend>0 ? +(a.revenue/a.spend).toFixed(2) : (a._rw>0 ? +(a._rws/a._rw).toFixed(2) : 0);
+    a.aov        = a.purchases>0&&a.revenue>0 ? +(a.revenue/a.purchases).toFixed(2) : 0;
+    a.frequency  = a.reach>0 ? +(a.impressions/a.reach).toFixed(2) : 0;
+    a.videoAvgPt = a._vapt_wt>0 ? +(a._vapt_w/a._vapt_wt).toFixed(1) : 0;
+    a.recallRate = a.impressions>0&&a.recallLift>0 ? +((a.recallLift/a.impressions)*100).toFixed(2) : 0;
+    a.costRecall = a.recallLift>0&&a.spend>0 ? +(a.spend/a.recallLift).toFixed(2) : 0;
+    a.costEngage = a.postEngage>0&&a.spend>0 ? +(a.spend/a.postEngage).toFixed(2) : 0;
+    a.tier       = a.roas>=4?'top':a.roas>=2?'mid':'low';
+    delete a._rws; delete a._rw; delete a._vapt_w; delete a._vapt_wt;
     return a;
   });
 }
